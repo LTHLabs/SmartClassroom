@@ -1,32 +1,31 @@
-# 🤖 AI Chatbot
+# Alexa for Classroom: Otomatisasi Pencahayaan Berbasis AI & IoT
 
-This repository contains the complete source code for building an AI Chatbot using HTML, CSS, and JavaScript. The project features a clean and responsive design, allowing for easy interaction with the chatbot.
+🧠 **Tujuan Ringkas**  
+Mengembangkan sistem pencahayaan otomatis di dalam ruang kelas berbasis sensor intensitas cahaya (LDR), dengan kontrol menggunakan mikrokontroler ESP32 dan dimming lampu via MOSFET. Sistem ini menjadi bagian awal dari konsep smart classroom yang akan diperluas dengan asisten AI dan komponen pendukung lainnya.
 
-## 📦 Get Started
+## ⚙️ Komponen Utama yang Digunakan
 
-To get the complete source code, download the zip file that contains all the necessary code and assets.
+| **Komponen**         | **Fungsi**                                   |
+|-----------------------|---------------------------------------------|
+| ESP32 Devkit V1       | Mikrokontroler utama dengan WiFi built-in   |
+| LDR + Resistor 10k    | Sensor untuk mengukur intensitas cahaya     |
+| IRLZ44N MOSFET        | Pengatur arus ke LED (PWM untuk dimming)    |
+| LED Strip 12V         | Lampu utama sistem pencahayaan              |
+| Power Supply 12V 2A   | Catu daya lampu                             |
+| DC Jack Adapter       | Konektor ke power supply                   |
 
-## ⭐ Features
+## 💡 Mekanisme Kerja Singkat
+1. Sensor LDR membaca intensitas cahaya alami di dalam ruangan.
+2. Data dari LDR diproses oleh ESP32.
+3. ESP32 mengatur kecerahan LED strip secara otomatis via PWM ke MOSFET.
+4. Semakin terang cahaya luar, semakin redup lampu – dan sebaliknya.
 
-- **Chat Functionality**: Interact with the AI-powered chatbot.
-- **Google Gemini API**: Utilizes a free API to generate responses.
-- **Loading Animation**: Engaging animation displayed before responses.
-- **Image Upload**: Upload images and ask related questions to the chatbot.
-- **Emoji Picker**: Easy-to-use emoji picker for enhanced conversations.
-- **Responsive Design**: Adapts to various screen sizes and devices.
-- **Easy Customization**: Simple to integrate and customize according to your needs.
-- **Clean Code**: Well-structured and commented code for easy understanding.
+Sistem ini bisa dikembangkan lebih lanjut untuk terintegrasi ke AI Asisten dan sistem jaringan antarkelas.
 
-## 🖼️ Icon
-
-An SVG icon representing the chatbot is included in the repository as `chatbot-icon.svg`. You can use this icon in your project for branding or visual representation.
-
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🤝 Contributing
-
-Feel free to submit issues or pull requests if you want to contribute to the project!
+## 📈 Rencana Implementasi Lanjut
+Setelah versi awal berjalan baik, sistem akan dikembangkan menjadi:
+- Integrasi dengan AI (Gemini / ChatGPT). (sedang proses)
+- Pengontrolan suara (via web atau voice assistant). 
+- Pengelolaan beberapa kelas berbasis jaringan.
+- Penambahan sensor suhu, kualitas udara, dan deteksi kehadiran.
 

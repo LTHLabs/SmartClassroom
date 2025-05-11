@@ -1,0 +1,5 @@
+{
+  "version": 2,
+  "builds": [{ "src": "api/sensor.js", "use": "@vercel/node" }],
+  "routes": [{ "src": "/api/sensor", "dest": "api/sensor.js" }]
+}
