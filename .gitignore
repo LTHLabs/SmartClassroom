@@ -1,6 +1,0 @@
-/.env
-node_modules
-server.js
-package-lock.json
-/api/server-express.js
-.vscode
