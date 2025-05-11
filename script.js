@@ -187,7 +187,7 @@ if (recognition) {
           const voices = speechSynthesis.getVoices();
           const googleVoice = voices.find(
             (v) => v.name.includes("Google") && v.lang === "id-ID");
-          speakInChunks(responseText, googleVoice || null);
+          speakInChunks(cleaned, googleVoice || null);
         } else {
         botTypingDiv.querySelector(".message-text").textContent =
           "⚠️ Jawaban dari Gemini kosong atau tidak terdeteksi.";
