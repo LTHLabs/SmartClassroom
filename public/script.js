@@ -10,7 +10,7 @@ const closeChatbot = document.querySelector("#close-chatbot");
 // API setup
 const API_KEY = "AIzaSyBKP_scjOxgkw9po7Bs_n1z2-sQGe8Mrdc";
 const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
-const SENSOR_API_URL = "/api/sensor";
+
 
 const userData = {
   message: null,
@@ -404,7 +404,7 @@ fileInput.addEventListener("change", () => {
 let latestSensorData = {};
 async function fetchSensorData() {
   try {
-    const response = await fetch(SENSOR_API_URL, { cache: "no-store" });
+    const response = await fetch("http://192.168.43.201/data", { cache: "no-store" });
     if (!response.ok) throw new Error("No data");
     const data = await response.json();
     latestSensorData = data;
