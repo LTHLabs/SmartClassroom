@@ -262,7 +262,6 @@
             }, 200);
         }
 
-        // Set offline status
         function setOfflineStatus(offline) {
             isOnline = !offline;
             const indicator = document.getElementById('offlineIndicator');
@@ -308,7 +307,7 @@
                 const context = prepareSensorContext();
                 const response = await callGeminiAPI(message, context);
                 
-                addMessageToChat(response, 'bot');
+                addTypingMessageToChat(response);
             } catch (error) {
                 console.error('Error calling Gemini API:', error);
                 addMessageToChat('Maaf, terjadi kesalahan. Silakan coba lagi nanti.', 'bot');
@@ -324,7 +323,6 @@
             messageDiv.className = `message ${sender}`;
 
             const avatar = sender === 'user' ? '<i class="fas fa-user"></i>' : '<i class="fas fa-robot"></i>';
-            
             messageDiv.innerHTML = `
                 <div class="message-avatar">${avatar}</div>
                 <div class="message-content">${message}</div>
@@ -334,12 +332,29 @@
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
-        function showLoading(show) {
-            const loadingIndicator = document.getElementById('loadingIndicator');
-            const sendButton = document.getElementById('sendButton');
-            
-            loadingIndicator.style.display = show ? 'block' : 'none';
-            sendButton.disabled = show;
+        // Efek typing realistis untuk respons AI
+        function addTypingMessageToChat(message) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot';
+            messageDiv.innerHTML = `
+                <div class="message-avatar"><i class="fas fa-robot"></i></div>
+                <div class="message-content" id="typingContent"></div>
+            `;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            const typingContent = messageDiv.querySelector('#typingContent');
+            let i = 0;
+            function typeChar() {
+                if (i < message.length) {
+                    typingContent.textContent += message.charAt(i);
+                    i++;
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                    setTimeout(typeChar, Math.random() * 40 + 20); // kecepatan realistis
+                }
+            }
+            typeChar();
         }
 
         // Prepare sensor context untuk AI
@@ -434,6 +449,13 @@
         window.initDashboard = initDashboard;
         window.sensorConfig = sensorConfig;
         window.sensorData = sensorData;
+
+        function showLoading(show) {
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const sendButton = document.getElementById('sendButton');
+            loadingIndicator.style.display = show ? 'block' : 'none';
+            sendButton.disabled = show;
+        }
     </script>
 </body>
 </html>
