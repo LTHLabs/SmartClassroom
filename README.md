@@ -7,7 +7,7 @@ Mengembangkan sistem pencahayaan otomatis di dalam ruang kelas berbasis sensor i
 
 | **Komponen**         | **Fungsi**                                   |
 |-----------------------|---------------------------------------------|
-| ESP32 Devkit V1       | Mikrokontroler utama dengan WiFi built-in   |
+| ESP32 NodeMCU         | Mikrokontroler utama dengan WiFi built-in   |
 | LDR + Resistor 10k    | Sensor untuk mengukur intensitas cahaya     |
 | IRLZ44N MOSFET        | Pengatur arus ke LED (PWM untuk dimming)    |
 | LED Strip 12V         | Lampu utama sistem pencahayaan              |

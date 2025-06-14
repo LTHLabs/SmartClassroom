@@ -1,168 +1,439 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@48,400,0,0&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,1,0" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0" />
-    <link rel="stylesheet" href="app/style.css"/>
-  </head>
-  <body> 
-
-<!-- Card Container -->
-<div class="title-container">
-  <h1 class="main-title">Alexa | SmartClassroom</h1>
-  <p class="subtitle">by kelompok 5</p>
-</div>
-<div class="card-center">
-  <div class="cardContainer">
-    <!-- Temperature Card -->
-    <div class="card">
-      <div class="sensor-icon">
-        <span class="material-symbols-outlined">device_thermostat</span>
-      </div>
-      <h3 class="sensor-title">Temperature</h3>
-      <div class="sensor-value" id="temperature">--</div>
-      <div class="sensor-status normal">Normal</div>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Classroom Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="offline-indicator" id="offlineIndicator">
+        ⚠️ Koneksi terputus - Data mungkin tidak real-time
     </div>
 
-    <!-- Humidity Card -->
-    <div class="card">
-      <div class="sensor-icon">
-        <span class="material-symbols-outlined">humidity_percentage</span>  
-      </div>
-      <h3 class="sensor-title">Humidity</h3>
-      <div class="sensor-value" id="humidity">--</div>
-      <div class="sensor-status warning">High</div>
-    </div>
-
-    <!-- Gas Card -->
-    <div class="card">
-      <div class="sensor-icon">
-        <span class="material-symbols-outlined">co2</span>
-      </div>
-      <h3 class="sensor-title">Gas Level</h3>
-      <div class="sensor-value" id="gas">--</div>
-      <div class="sensor-status danger" id="status">--</div>
-    </div>
-
-    <!-- Light Card -->
-    <div class="card">
-      <div class="sensor-icon">
-        <span class="material-symbols-outlined">light_mode</span>
-      </div>
-      <h3 class="sensor-title">Light</h3>
-      <div class="sensor-value" id="ldr">--</div>
-      <div class="sensor-status normal">Normal</div>
-    </div>
-  </div>
-</div>
-
-</div>
-    <button id="chatbot-toggler">
-      <span class="material-symbols-outlined">mode_comment</span>
-      <span class="material-symbols-rounded">close</span>
-    </button>
-
-    <div class="chatbot-popup">
-      <!-- Chatbot Header -->
-      <div class="chat-header">
-        <div class="header-info">
-          <svg 
-            class="chatbot-logo"
-            xmlns="http://www.w3.org/2000/svg"
-            width="50"
-            height="50"
-            viewBox="0 0 1024 1024"
-          >
-            <path
-              d="M738.3 287.6H285.7c-59 0-106.8 47.8-106.8 106.8v303.1c0 59 47.8 106.8 106.8 106.8h81.5v111.1c0 .7.8 1.1 1.4.7l166.9-110.6 41.8-.8h117.4l43.6-.4c59 0 106.8-47.8 106.8-106.8V394.5c0-59-47.8-106.9-106.8-106.9zM351.7 448.2c0-29.5 23.9-53.5 53.5-53.5s53.5 23.9 53.5 53.5-23.9 53.5-53.5 53.5-53.5-23.9-53.5-53.5zm157.9 267.1c-67.8 0-123.8-47.5-132.3-109h264.6c-8.6 61.5-64.5 109-132.3 109zm110-213.7c-29.5 0-53.5-23.9-53.5-53.5s23.9-53.5 53.5-53.5 53.5 23.9 53.5 53.5-23.9 53.5-53.5 53.5zM867.2 644.5V453.1h26.5c19.4 0 35.1 15.7 35.1 35.1v121.1c0 19.4-15.7 35.1-35.1 35.1h-26.5zM95.2 609.4V488.2c0-19.4 15.7-35.1 35.1-35.1h26.5v191.3h-26.5c-19.4 0-35.1-15.7-35.1-35.1zM561.5 149.6c0 23.4-15.6 43.3-36.9 49.7v44.9h-30v-44.9c-21.4-6.5-36.9-26.3-36.9-49.7 0-28.6 23.3-51.9 51.9-51.9s51.9 23.3 51.9 51.9z"
-            ></path>
-          </svg>
-
-          <h2 class="logo-text">Chatbot</h2>
+    <div class="dashboard-container">
+        <div class="header">
+            <h1><i class="fas fa-microchip"></i> Smart Classroom</h1>
+            <p>Monitoring Sensor Real-time dengan AI Assistant</p>
         </div>
-        <button id="close-chatbot"
-        class="material-symbols-rounded">keyboard_arrow_down</button>
-      </div>
 
-      <!-- Chatbot Body -->
-      <div class="chat-body">
-        <div class="message bot-message">
-          <svg 
-            class="bot-avatar"
-            xmlns="http://www.w3.org/2000/svg"
-            width="50"
-            height="50"
-            viewBox="0 0 1024 1024"
-          >
-          <path
-              d="M738.3 287.6H285.7c-59 0-106.8 47.8-106.8 106.8v303.1c0 59 47.8 106.8 106.8 106.8h81.5v111.1c0 .7.8 1.1 1.4.7l166.9-110.6 41.8-.8h117.4l43.6-.4c59 0 106.8-47.8 106.8-106.8V394.5c0-59-47.8-106.9-106.8-106.9zM351.7 448.2c0-29.5 23.9-53.5 53.5-53.5s53.5 23.9 53.5 53.5-23.9 53.5-53.5 53.5-53.5-23.9-53.5-53.5zm157.9 267.1c-67.8 0-123.8-47.5-132.3-109h264.6c-8.6 61.5-64.5 109-132.3 109zm110-213.7c-29.5 0-53.5-23.9-53.5-53.5s23.9-53.5 53.5-53.5 53.5 23.9 53.5 53.5-23.9 53.5-53.5 53.5zM867.2 644.5V453.1h26.5c19.4 0 35.1 15.7 35.1 35.1v121.1c0 19.4-15.7 35.1-35.1 35.1h-26.5zM95.2 609.4V488.2c0-19.4 15.7-35.1 35.1-35.1h26.5v191.3h-26.5c-19.4 0-35.1-15.7-35.1-35.1zM561.5 149.6c0 23.4-15.6 43.3-36.9 49.7v44.9h-30v-44.9c-21.4-6.5-36.9-26.3-36.9-49.7 0-28.6 23.3-51.9 51.9-51.9s51.9 23.3 51.9 51.9z"
-            ></path>
-          </svg>
-          <div class="message-text">
-            Hey there 👋 <br />
-            How can i help you today?
-          </div>
+        <div class="sensor-grid" id="sensorGrid">
+            <!-- Sensor cards akan diisi oleh JavaScript -->
         </div>
-      </div>
-      
 
-      <!-- Chatbot Footer -->
-      <div class="chat-footer">
-        <form action="#" class="chat-form">
-          <textarea placeholder="Message..." class="message-input" required></textarea>
-          <div class="chat-controls">
-          <input type="checkbox" id="checkbox" />
-            <label class="switch" for="checkbox">
-              <div class="mic-on">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  fill="currentColor"
-                  class="bi bi-mic-fill"
-                  viewBox="0 0 16 16"
-                >
-                  <path d="M5 3a3 3 0 0 1 6 0v5a3 3 0 0 1-6 0V3z"></path>
-                  <path
-                    d="M3.5 6.5A.5.5 0 0 1 4 7v1a4 4 0 0 0 8 0V7a.5.5 0 0 1 1 0v1a5 5 0 0 1-4.5 4.975V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 .5-.5z"
-                  ></path>
-                </svg>
-              </div>
-              <div class="mic-off">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  fill="currentColor"
-                  class="bi bi-mic-mute-fill"
-                  viewBox="0 0 16 16"
-                >
-                  <path
-                    d="M13 8c0 .564-.094 1.107-.266 1.613l-.814-.814A4.02 4.02 0 0 0 12 8V7a.5.5 0 0 1 1 0v1zm-5 4c.818 0 1.578-.245 2.212-.667l.718.719a4.973 4.973 0 0 1-2.43.923V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 1 0v1a4 4 0 0 0 4 4zm3-9v4.879L5.158 2.037A3.001 3.001 0 0 1 11 3z"
-                  ></path>
-                  <path
-                    d="M9.486 10.607 5 6.12V8a3 3 0 0 0 4.486 2.607zm-7.84-9.253 12 12 .708-.708-12-12-.708.708z"
-                  ></path>
-                </svg>
-              </div>
-            </label>
-            <!-- <button type="button" id="emoji-picker" class="material-symbols-rounded">sentiment_satisfied</button> -->
-            <div class="file-upload-wrapper">
-              <input type="file" accept="images/*" id="file-input" hidden>
-              <button type="button" id="file-upload" class="material-symbols-rounded">attach_file</button>
+        <div class="chatbot-section">
+            <div class="chatbot-header">
+                <i class="fas fa-robot"></i> AI Assistant - Tanya tentang data sensor
             </div>
-            <button type="submit" id="send-message" class="material-symbols-rounded">arrow_upward</button>
-          </div>
-        </form>
-      </div>
+            <div class="chat-messages" id="chatMessages">
+                <div class="message bot">
+                    <div class="message-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="message-content">
+                        Halo! Saya adalah AI Assistant untuk Smart Classroom. Anda bisa bertanya tentang data sensor, kondisi ruangan, atau meminta analisis data. Bagaimana saya bisa membantu Anda?
+                    </div>
+                </div>
+            </div>
+            <div class="loading-indicator" id="loadingIndicator">
+                <span class="loading-dots">● ● ●</span> AI sedang berpikir...
+            </div>
+            <div class="chat-input-section">
+                <div class="input-group">
+                    <input type="text" class="form-control" id="chatInput" 
+                           placeholder="Tanya tentang kondisi sensor, suhu ruangan, dll..." 
+                           maxlength="500">
+                    <button class="btn btn-primary" id="sendButton">
+                        <i class="fas fa-paper-plane"></i> Kirim
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- linking emoji mart script for emoji picker -->
-    <script src="https://cdn.jsdelivr.net/npm/emoji-mart@latest/dist/browser.js"></script>
+    <!-- Firebase SDK v9 Modular -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, onValue, off } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+        
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyD_jg2mFvR0GIp7rcO5eusQkf06mYdbPGA",
+            authDomain: "smartclassroom-416bc.firebaseapp.com",
+            databaseURL: "https://smartclassroom-416bc-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "smartclassroom-416bc",
+            storageBucket: "smartclassroom-416bc.firebasestorage.app",
+            messagingSenderId: "586666640868",
+            appId: "1:586666640868:web:d70c71daee4c05367333f1",
+            measurementId: "G-XF0XFKXXZ7"
+        };
 
-    <script src="app/script.js"></script>
-  </body>
+        // Gemini API Configuration
+        const API_KEY = "AIzaSyBKP_scjOxgkw9po7Bs_n1z2-sQGe8Mrdc";
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        let sensorData = {};
+        let isOnline = true;
+
+        // Sensor configuration based on your Firebase structure
+        const sensorConfig = {
+            temperature: {
+                title: 'Suhu Ruangan',
+                icon: 'fas fa-thermometer-half',
+                unit: '°C',
+                color: '#ef4444',
+                getStatus: (value) => {
+                    if (value < 20 || value > 35) return 'danger';
+                    if (value < 22 || value > 32) return 'warning';
+                    return 'normal';
+                }
+            },
+            humidity: {
+                title: 'Kelembaban',
+                icon: 'fas fa-tint',
+                unit: '%',
+                color: '#3b82f6',
+                getStatus: (value) => {
+                    if (value < 30 || value > 80) return 'danger';
+                    if (value < 40 || value > 70) return 'warning';
+                    return 'normal';
+                }
+            },
+            ldr: {
+                title: 'Sensor Cahaya (LDR)',
+                icon: 'fas fa-eye',
+                unit: '',
+                color: '#f59e0b',
+                getStatus: (value) => {
+                    if (value < 500) return 'danger';
+                    if (value < 1000) return 'warning';
+                    return 'normal';
+                },
+                formatValue: (value) => {
+                    if (value < 500) return `${value} Gelap`;
+                    if (value < 1500) return `${value} Redup`;
+                    if (value < 2500) return `${value} Terang`;
+                    return `${value} Sangat Terang`;
+                }
+            },
+            gas: {
+                title: 'Sensor Gas',
+                icon: 'fas fa-smog',
+                unit: 'ppm',
+                color: '#10b981',
+                getStatus: (value) => {
+                    if (value > 2000) return 'danger';
+                    if (value > 1200) return 'warning';
+                    return 'normal';
+                }
+            },
+            gasDetected: {
+                title: 'Status Deteksi Gas',
+                icon: 'fas fa-exclamation-triangle',
+                unit: '',
+                color: '#dc2626',
+                getStatus: (value) => value ? 'danger' : 'normal',
+                formatValue: (value) => value ? '🚨 Gas Terdeteksi!' : '✅ Aman'
+            }
+        };
+
+        // Initialize dashboard
+        function initDashboard() {
+            renderSensorCards();
+            setupRealtimeListeners();
+            setupChatbot();
+            checkConnectionStatus();
+        }
+
+        // Render sensor cards
+        function renderSensorCards() {
+            const sensorGrid = document.getElementById('sensorGrid');
+            sensorGrid.innerHTML = '';
+
+            Object.keys(sensorConfig).forEach(sensorKey => {
+                const config = sensorConfig[sensorKey];
+                const card = createSensorCard(sensorKey, config);
+                sensorGrid.appendChild(card);
+            });
+        }
+
+        // Create sensor card element
+        function createSensorCard(sensorKey, config) {
+            const card = document.createElement('div');
+            card.className = 'sensor-card';
+            card.id = `sensor-${sensorKey}`;
+            
+            const value = sensorData[sensorKey] || 0;
+            const displayValue = config.formatValue ? config.formatValue(value) : value.toFixed(1);
+            const status = config.getStatus(value);
+            const statusText = getStatusText(status);
+
+            card.innerHTML = `
+                <div class="sensor-header">
+                    <div>
+                        <div class="sensor-icon" style="background: ${config.color}">
+                            <i class="${config.icon}"></i>
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <div class="sensor-title">${config.title}</div>
+                        <small class="text-muted" id="timestamp-${sensorKey}">--</small>
+                    </div>
+                </div>
+                <div class="sensor-value" id="value-${sensorKey}">${displayValue}</div>
+                <div class="sensor-unit">${config.unit}</div>
+                <div class="sensor-status status-${status}" id="status-${sensorKey}">
+                    ${statusText}
+                </div>
+            `;
+
+            return card;
+        }
+
+        // Get status text
+        function getStatusText(status) {
+            switch(status) {
+                case 'normal': return '✅ Normal';
+                case 'warning': return '⚠️ Perhatian';
+                case 'danger': return '🚨 Bahaya';
+                default: return '❓ Unknown';
+            }
+        }
+
+        // Setup real-time listeners
+        function setupRealtimeListeners() {
+            const sensorDataRef = ref(database, 'sensorData');
+            
+            onValue(sensorDataRef, (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    Object.keys(sensorConfig).forEach(sensorKey => {
+                        if (data.hasOwnProperty(sensorKey)) {
+                            sensorData[sensorKey] = data[sensorKey];
+                            updateSensorCard(sensorKey, {
+                                value: data[sensorKey],
+                                timestamp: data.timestamp || Date.now()
+                            });
+                        }
+                    });
+                }
+            }, (error) => {
+                console.error('Error listening to sensorData:', error);
+                setOfflineStatus(true);
+            });
+
+            // Listen for connection status
+            const connectedRef = ref(database, '.info/connected');
+            onValue(connectedRef, (snapshot) => {
+                setOfflineStatus(!snapshot.val());
+            });
+        }
+
+        // Update sensor card
+        function updateSensorCard(sensorKey, data) {
+            const config = sensorConfig[sensorKey];
+            const value = data.value || 0;
+            const displayValue = config.formatValue ? config.formatValue(value) : value.toFixed(1);
+            const status = config.getStatus(value);
+            const statusText = getStatusText(status);
+
+            document.getElementById(`value-${sensorKey}`).textContent = displayValue;
+            document.getElementById(`timestamp-${sensorKey}`).textContent = 
+                new Date(data.timestamp || Date.now()).toLocaleTimeString('id-ID');
+            
+            const statusElement = document.getElementById(`status-${sensorKey}`);
+            statusElement.className = `sensor-status status-${status}`;
+            statusElement.textContent = statusText;
+
+            // Add animation effect
+            const card = document.getElementById(`sensor-${sensorKey}`);
+            card.style.transform = 'scale(1.02)';
+            setTimeout(() => {
+                card.style.transform = 'scale(1)';
+            }, 200);
+        }
+
+        // Set offline status
+        function setOfflineStatus(offline) {
+            isOnline = !offline;
+            const indicator = document.getElementById('offlineIndicator');
+            indicator.style.display = offline ? 'block' : 'none';
+        }
+
+        function checkConnectionStatus() {
+            setInterval(() => {
+                if (!navigator.onLine) {
+                    setOfflineStatus(true);
+                }
+            }, 5000);
+        }
+
+        // Setup chatbot
+        function setupChatbot() {
+            const chatInput = document.getElementById('chatInput');
+            const sendButton = document.getElementById('sendButton');
+
+            sendButton.addEventListener('click', sendMessage);
+            chatInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+        }
+
+        // Send message to chatbot
+        async function sendMessage() {
+            const chatInput = document.getElementById('chatInput');
+            const message = chatInput.value.trim();
+            
+            if (!message) return;
+
+            addMessageToChat(message, 'user');
+            chatInput.value = '';
+
+            showLoading(true);
+
+            try {
+                // Prepare context with current sensor data
+                const context = prepareSensorContext();
+                const response = await callGeminiAPI(message, context);
+                
+                addMessageToChat(response, 'bot');
+            } catch (error) {
+                console.error('Error calling Gemini API:', error);
+                addMessageToChat('Maaf, terjadi kesalahan. Silakan coba lagi nanti.', 'bot');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Add message to chat
+        function addMessageToChat(message, sender) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+
+            const avatar = sender === 'user' ? '<i class="fas fa-user"></i>' : '<i class="fas fa-robot"></i>';
+            
+            messageDiv.innerHTML = `
+                <div class="message-avatar">${avatar}</div>
+                <div class="message-content">${message}</div>
+            `;
+
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function showLoading(show) {
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const sendButton = document.getElementById('sendButton');
+            
+            loadingIndicator.style.display = show ? 'block' : 'none';
+            sendButton.disabled = show;
+        }
+
+        // Prepare sensor context untuk AI
+        function prepareSensorContext() {
+            const currentTime = new Date().toLocaleString('id-ID');
+            let context = `Data sensor Smart Classroom saat ini (${currentTime}):\n`;
+            
+            // Add current sensor readings
+            if (sensorData.temperature) {
+                context += `- Suhu: ${sensorData.temperature}°C\n`;
+            }
+            if (sensorData.humidity) {
+                context += `- Kelembaban: ${sensorData.humidity}%\n`;
+            }
+            if (sensorData.ldr) {
+                const lightLevel = sensorData.ldr < 500 ? 'Gelap' : 
+                                 sensorData.ldr < 1500 ? 'Redup' : 
+                                 sensorData.ldr < 2500 ? 'Terang' : 'Sangat Terang';
+                context += `- Cahaya (LDR): ${sensorData.ldr} (${lightLevel})\n`;
+            }
+            if (sensorData.gas) {
+                context += `- Gas: ${sensorData.gas} ppm\n`;
+            }
+            if (sensorData.gasDetected !== undefined) {
+                context += `- Status Gas: ${sensorData.gasDetected ? 'Terdeteksi Bahaya!' : 'Aman'}\n`;
+            }
+
+            context += `\nAnda adalah AI assistant untuk Smart Classroom yang memantau kondisi ruangan. Berikan analisis berdasarkan data sensor dan jawab pertanyaan dengan bahasa Indonesia yang mudah dipahami. jika pengguna tidak bertanya seputar data sensor, berikan jawaban informasi yang sesuai di tanyakan pengguna \n\n`;
+            
+            return context;
+        }
+
+        // Call Gemini API
+        async function callGeminiAPI(message, context) {
+            const requestBody = {
+                contents: [
+                    {
+                        parts: [
+                            {
+                                text: `${context}\n\nPertanyaan pengguna: ${message}`
+                            }
+                        ]
+                    }
+                ],
+                generationConfig: {
+                    temperature: 0.7,
+                    topK: 40,
+                    topP: 0.95,
+                    maxOutputTokens: 1024,
+                }
+            };
+
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestBody)
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            return data.candidates[0].content.parts[0].text;
+        }
+
+        document.addEventListener('DOMContentLoaded', initDashboard);
+
+        // Handle page visibility change
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                const sensorDataRef = ref(database, 'sensorData');
+                onValue(sensorDataRef, (snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        Object.keys(sensorConfig).forEach(sensorKey => {
+                            if (data.hasOwnProperty(sensorKey)) {
+                                sensorData[sensorKey] = data[sensorKey];
+                                updateSensorCard(sensorKey, {
+                                    value: data[sensorKey],
+                                    timestamp: data.timestamp || Date.now()
+                                });
+                            }
+                        });
+                    }
+                }, { onlyOnce: true });
+            }
+        });
+
+        window.initDashboard = initDashboard;
+        window.sensorConfig = sensorConfig;
+        window.sensorData = sensorData;
+    </script>
+</body>
 </html>
