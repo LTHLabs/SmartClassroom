@@ -456,3 +456,29 @@ body {
         padding: 0.4rem 0.5rem;
     }
 }
+
+.chart-container {
+    margin-bottom: 2rem;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px #e0e7ef;
+    padding: 1.5rem;
+}
+
+.table-responsive {
+    margin-top: 2rem;
+}
+
+.btn-csv {
+    margin-left: 8px;
+}
+
+@media (max-width: 600px) {
+    .chart-container {
+        padding: 0.5rem;
+    }
+
+    .table-responsive {
+        font-size: 0.95em;
+    }
+}

@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartClassroom - Monitoring & Grafik</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <!-- Hapus Chart.js -->
+</head>
+<body style="background:#f1f5f9;">
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2><i class="fas fa-chart-line"></i> Monitoring & Grafik SmartClassroom</h2>
+        <a href="index.html" class="btn btn-outline-primary"><i class="fas fa-home"></i> Kembali ke Dashboard</a>
+    </div>
+    <div class="row">
+        <div class="col-lg-6 col-12">
+            <div class="chart-container">
+                <h5 class="mb-3">Sensor Ruangan (Real-time)</h5>
+                <div id="chartRoom" style="height:320px;"></div>
+            </div>
+        </div>
+        <div class="col-lg-6 col-12">
+            <div class="chart-container">
+                <h5 class="mb-3">Cuaca Luar (Real-time)</h5>
+                <div id="chartWeather" style="height:320px;"></div>
+            </div>
+        </div>
+    </div>
+    <div class="d-flex justify-content-between align-items-center mt-4 mb-2">
+        <h5>Dataset Monitoring</h5>
+        <div class="d-flex align-items-center gap-2">
+            <select id="filterWaktu" class="form-select form-select-sm" style="width:auto;">
+                <option value="all">Semua Data</option>
+                <option value="day">Hari Ini</option>
+                <option value="week">Minggu Ini</option>
+                <option value="month">Bulan Ini</option>
+            </select>
+            <button class="btn btn-secondary btn-csv" id="btnExport"><i class="fas fa-file-csv"></i> Unduh Dataset (.CSV)</button>
+        </div>
+    </div>
+    <!-- Tabel dataset dihapus, tidak ada tampilan tabel -->
+    <div class="text-center mt-4">
+        <a href="index.html" class="btn btn-outline-primary"><i class="fas fa-arrow-left"></i></a>
+    </div>
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import { getDatabase, ref, onValue } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+// Firebase Configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyD_jg2mFvR0GIp7rcO5eusQkf06mYdbPGA",
+    authDomain: "smartclassroom-416bc.firebaseapp.com",
+    databaseURL: "https://smartclassroom-416bc-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "smartclassroom-416bc",
+    storageBucket: "smartclassroom-416bc.firebasestorage.app",
+    messagingSenderId: "586666640868",
+    appId: "1:586666640868:web:d70c71daee4c05367333f1",
+    measurementId: "G-XF0XFKXXZ7"
+};
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
+
+let dataset = [];
+let sensorData = { temperature: null, humidity: null, ldr: null, gas: null };
+let weatherData = { temp_c: null, humidity: null, condition: '', pm2_5: null, time: '' };
+
+// --- ECharts Setup ---
+const chartRoom = echarts.init(document.getElementById('chartRoom'));
+const chartWeather = echarts.init(document.getElementById('chartWeather'));
+
+// Fungsi untuk load data grafik dari localStorage (tanpa padding)
+function loadChartData(key, defaultOption, maxLen) {
+    const saved = localStorage.getItem(key);
+    if (saved) {
+        try {
+            const parsed = JSON.parse(saved);
+            if (parsed.xAxis && parsed.series) {
+                // Hanya ambil data real (tanpa padding)
+                defaultOption.xAxis.data = parsed.xAxis;
+                defaultOption.series.forEach((s, i) => {
+                    s.data = parsed.series[i] || [];
+                });
+            }
+        } catch {}
+    }
+    // Pastikan semua series sama panjang dengan xAxis
+    defaultOption.series.forEach(s => {
+        while (s.data.length < defaultOption.xAxis.data.length) s.data.unshift(null);
+        while (s.data.length > defaultOption.xAxis.data.length) s.data.shift();
+    });
+    // Padding hanya untuk tampilan
+    while (defaultOption.xAxis.data.length < maxLen) {
+        defaultOption.xAxis.data.unshift('');
+        defaultOption.series.forEach(s => s.data.unshift(null));
+    }
+    while (defaultOption.xAxis.data.length > maxLen) {
+        defaultOption.xAxis.data.shift();
+        defaultOption.series.forEach(s => s.data.shift());
+    }
+    // Forward fill data null di tengah agar line tidak terputus
+    defaultOption.series.forEach(s => {
+        for (let i = 1; i < s.data.length; i++) {
+            if (s.data[i] === null && defaultOption.xAxis.data[i] !== '') {
+                s.data[i] = s.data[i-1];
+            }
+        }
+    });
+}
+
+const maxLen = 100;
+let roomOption = {
+    tooltip: { trigger: 'axis' },
+    legend: { data: ['Suhu Ruangan (°C)', 'Kelembaban Ruangan (%)', 'Cahaya (Lux)', 'Gas (ppm)'] },
+    xAxis: { type: 'category', data: [] },
+    yAxis: { type: 'value' },
+    series: [
+        { name: 'Suhu Ruangan (°C)', type: 'line', data: [], smooth: true, color: '#3b82f6' },
+        { name: 'Kelembaban Ruangan (%)', type: 'line', data: [], smooth: true, color: '#ef4444' },
+        { name: 'Cahaya (Lux)', type: 'line', data: [], smooth: true, color: '#facc15' },
+        { name: 'Gas (ppm)', type: 'line', data: [], smooth: true, color: '#64748b' }
+    ]
+};
+let weatherOption = {
+    tooltip: { trigger: 'axis' },
+    legend: { data: ['Suhu Luar (°C)', 'Kelembaban Luar (%)', 'PM2.5 (μg/m³)'] },
+    xAxis: { type: 'category', data: [] },
+    yAxis: { type: 'value' },
+    series: [
+        { name: 'Suhu Luar (°C)', type: 'line', data: [], smooth: true, color: '#22c55e' },
+        { name: 'Kelembaban Luar (%)', type: 'line', data: [], smooth: true, color: '#a21caf' },
+        { name: 'PM2.5 (μg/m³)', type: 'line', data: [], smooth: true, color: '#a16207' }
+    ]
+};
+// Load data grafik dari localStorage jika ada (tanpa padding)
+loadChartData('smartclassroom_chartRoom', roomOption, maxLen);
+loadChartData('smartclassroom_chartWeather', weatherOption, maxLen);
+
+chartRoom.setOption(roomOption);
+chartWeather.setOption(weatherOption);
+
+// --- Ambil data sensor dari Firebase ---
+function listenSensorData() {
+    const sensorDataRef = ref(database, 'sensorData');
+    onValue(sensorDataRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            sensorData = {
+                temperature: data.temperature ?? null,
+                humidity: data.humidity ?? null,
+                ldr: data.ldr ?? null,
+                gas: data.gas ?? null
+            };
+        }
+    });
+}
+
+// --- Ambil data cuaca dari WeatherAPI ---
+async function fetchWeatherData() {
+    const API_URL = 'https://api.weatherapi.com/v1/current.json?key=c05e367e368a4fb9a1113435250607&q=Cirebon&aqi=yes';
+    try {
+        const response = await fetch(API_URL);
+        if (!response.ok) throw new Error('Gagal mengambil data cuaca');
+        const data = await response.json();
+        const c = data.current;
+        weatherData = {
+            temp_c: c.temp_c,
+            humidity: c.humidity,
+            condition: c.condition.text,
+            pm2_5: c.air_quality && c.air_quality.pm2_5 !== undefined ? c.air_quality.pm2_5 : null,
+            time: data.location.localtime
+        };
+    } catch (err) {
+        weatherData = { temp_c: null, humidity: null, condition: '', pm2_5: null, time: new Date().toLocaleString('id-ID', { hour12: false }) };
+    }
+}
+
+// --- Simpan Data ke Local Storage ---
+function saveCurrentData() {
+    const row = {
+        timestamp: weatherData.time || new Date().toLocaleString('id-ID', { hour12: false }),
+        env_temp: sensorData.temperature,
+        env_humidity: sensorData.humidity,
+        env_light: sensorData.ldr,
+        env_gas: sensorData.gas,
+        weather_temp: weatherData.temp_c,
+        weather_humidity: weatherData.humidity,
+        weather_condition: weatherData.condition,
+        weather_pm25: weatherData.pm2_5
+    };
+    dataset.push(row);
+    localStorage.setItem('smartclassroom_dataset', JSON.stringify(dataset));
+}
+
+// --- Filter Dataset Berdasarkan Waktu ---
+function filterDatasetByTime(dataset, filter) {
+    if (filter === 'all') return dataset;
+    const now = new Date();
+    return dataset.filter(row => {
+        const t = new Date(row.timestamp.replace(' ', 'T'));
+        if (filter === 'day') {
+            return t.getFullYear() === now.getFullYear() && t.getMonth() === now.getMonth() && t.getDate() === now.getDate();
+        } else if (filter === 'week') {
+            // Cek minggu yang sama (ISO week)
+            const getWeek = d => {
+                d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+                d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
+                const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+                return Math.ceil((((d - yearStart) / 86400000) + 1)/7);
+            };
+            return t.getFullYear() === now.getFullYear() && getWeek(t) === getWeek(now);
+        } else if (filter === 'month') {
+            return t.getFullYear() === now.getFullYear() && t.getMonth() === now.getMonth();
+        }
+        return true;
+    });
+}
+
+// --- Ekspor CSV ---
+function exportCSV() {
+    const filter = document.getElementById('filterWaktu').value;
+    const filtered = filterDatasetByTime(dataset, filter);
+    let csv = 'timestamp,env_temp,env_humidity,env_light,env_gas,weather_temp,weather_humidity,weather_condition,weather_pm25\n';
+    filtered.forEach(row => {
+        csv += `${row.timestamp},${row.env_temp},${row.env_humidity},${row.env_light},${row.env_gas},${row.weather_temp},${row.weather_humidity},${row.weather_condition},${row.weather_pm25}\n`;
+    });
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `smartclassroom_dataset_${filter}_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+document.getElementById('btnExport').addEventListener('click', exportCSV);
+
+// --- Update Data & Chart ---
+async function updateDataAndChart() {
+    await fetchWeatherData();
+    const label = weatherData.time || new Date().toLocaleString('id-ID', { hour12: false });
+    // Hapus padding sebelum push data baru
+    while (roomOption.xAxis.data.length && roomOption.xAxis.data[0] === '') {
+        roomOption.xAxis.data.shift();
+        roomOption.series.forEach(s => s.data.shift());
+    }
+    while (weatherOption.xAxis.data.length && weatherOption.xAxis.data[0] === '') {
+        weatherOption.xAxis.data.shift();
+        weatherOption.series.forEach(s => s.data.shift());
+    }
+    // Update room chart
+    roomOption.xAxis.data.push(label);
+    roomOption.series[0].data.push(sensorData.temperature);
+    roomOption.series[1].data.push(sensorData.humidity);
+    roomOption.series[2].data.push(sensorData.ldr);
+    roomOption.series[3].data.push(sensorData.gas);
+    // Batas maksimum maxLen data
+    while (roomOption.xAxis.data.length > maxLen) {
+        roomOption.xAxis.data.shift();
+        roomOption.series.forEach(s => s.data.shift());
+    }
+    // Pastikan semua series sama panjang dengan xAxis
+    roomOption.series.forEach(s => {
+        while (s.data.length < roomOption.xAxis.data.length) s.data.unshift(null);
+        while (s.data.length > roomOption.xAxis.data.length) s.data.shift();
+    });
+    // Padding hanya untuk tampilan
+    let padRoom = maxLen - roomOption.xAxis.data.length;
+    for (let i = 0; i < padRoom; i++) {
+        roomOption.xAxis.data.unshift('');
+        roomOption.series.forEach(s => s.data.unshift(null));
+    }
+    // Forward fill data null di tengah agar line tidak terputus
+    roomOption.series.forEach(s => {
+        for (let i = 1; i < s.data.length; i++) {
+            if (s.data[i] === null && roomOption.xAxis.data[i] !== '') {
+                s.data[i] = s.data[i-1];
+            }
+        }
+    });
+    chartRoom.setOption(roomOption);
+    // Simpan data grafik ke localStorage (tanpa padding)
+    localStorage.setItem('smartclassroom_chartRoom', JSON.stringify({
+        xAxis: roomOption.xAxis.data.slice(padRoom),
+        series: roomOption.series.map(s => s.data.slice(padRoom))
+    }));
+
+    // Update weather chart
+    weatherOption.xAxis.data.push(label);
+    weatherOption.series[0].data.push(weatherData.temp_c);
+    weatherOption.series[1].data.push(weatherData.humidity);
+    weatherOption.series[2].data.push(weatherData.pm2_5);
+    while (weatherOption.xAxis.data.length > maxLen) {
+        weatherOption.xAxis.data.shift();
+        weatherOption.series.forEach(s => s.data.shift());
+    }
+    weatherOption.series.forEach(s => {
+        while (s.data.length < weatherOption.xAxis.data.length) s.data.unshift(null);
+        while (s.data.length > weatherOption.xAxis.data.length) s.data.shift();
+    });
+    let padWeather = maxLen - weatherOption.xAxis.data.length;
+    for (let i = 0; i < padWeather; i++) {
+        weatherOption.xAxis.data.unshift('');
+        weatherOption.series.forEach(s => s.data.unshift(null));
+    }
+    weatherOption.series.forEach(s => {
+        for (let i = 1; i < s.data.length; i++) {
+            if (s.data[i] === null && weatherOption.xAxis.data[i] !== '') {
+                s.data[i] = s.data[i-1];
+            }
+        }
+    });
+    chartWeather.setOption(weatherOption);
+    localStorage.setItem('smartclassroom_chartWeather', JSON.stringify({
+        xAxis: weatherOption.xAxis.data.slice(padWeather),
+        series: weatherOption.series.map(s => s.data.slice(padWeather))
+    }));
+    // Simpan data otomatis setiap update
+    saveCurrentData();
+}
+
+window.onload = function() {
+    const saved = localStorage.getItem('smartclassroom_dataset');
+    if (saved) {
+        dataset = JSON.parse(saved);
+    }
+    listenSensorData();
+    updateDataAndChart();
+    setInterval(updateDataAndChart, 5000);
+};
+</script>
+</body>
+</html>

@@ -23,6 +23,7 @@
         </div>
 
         <div class="weather-section" id="weatherSection" style="margin-bottom: 24px; cursor:pointer;">
+        <a href="dashboard-graph.html" class="btn btn-outline-primary"><i class="fas fa-home"></i>Monitor</a>
             <div class="weather-header" id="weatherHeader" style="display: flex; align-items: center; gap: 12px;">
                 <img id="weatherIcon" src="" alt="Weather Icon" style="width:48px;height:48px;display:none;">
                 <div>
@@ -48,7 +49,7 @@
         <!-- Notifikasi sensor suhu tidak aktif -->
         <div id="notifTempInactive" class="sensor-notif" style="display:none; margin: 16px 2rem 0 2rem;">
             <i class="fas fa-exclamation-triangle" style="color:#ef4444"></i>
-            Sensor ruangan tidak aktif atau tidak ada data!
+            
         </div>
         <!-- Sensor grid -->
         <div class="sensor-grid" id="sensorGrid">
@@ -117,6 +118,7 @@
         let isOnline = true;
         let typingStopped = false;
         let weatherData = null;
+        let isInactive = false;
 
         const sensorConfig = {
             temperature: {
@@ -251,10 +253,20 @@
                             let sensorTimestamp = null;
                             if (sensorKey === 'temperature') {
                                 sensorTimestamp = data.temperatureTimestamp || data.timestamp || Date.now();
-                                // Simpan juga ke sensorData agar bisa dipakai di notifikasi
+                                // Konversi ke milidetik jika string
+                                if (typeof sensorTimestamp === 'string' && !/^[0-9]+$/.test(sensorTimestamp)) {
+                                    sensorTimestamp = new Date(sensorTimestamp).getTime();
+                                } else {
+                                    sensorTimestamp = Number(sensorTimestamp);
+                                }
                                 sensorData.temperatureTimestamp = sensorTimestamp;
                             } else {
                                 sensorTimestamp = data[`${sensorKey}Timestamp`] || data.timestamp || Date.now();
+                                if (typeof sensorTimestamp === 'string' && !/^[0-9]+$/.test(sensorTimestamp)) {
+                                    sensorTimestamp = new Date(sensorTimestamp).getTime();
+                                } else {
+                                    sensorTimestamp = Number(sensorTimestamp);
+                                }
                             }
                             updateSensorCard(sensorKey, {
                                 value: data[sensorKey],
@@ -341,7 +353,6 @@
             chatInput.value = '';
             showLoading(true);
             try {
-                // Prepare context with current sensor and weather data
                 const context = prepareContext();
                 const response = await callGeminiAPI(message, context);
                 const cleaned = cleanAIBullets(response);
@@ -354,12 +365,10 @@
             }
         }
 
-        // Stop message to chatbot
         function stopMessage() {
             typingStopped = true;
         }
 
-        // Add message to chat
         function addMessageToChat(message, sender) {
             const chatMessages = document.getElementById('chatMessages');
             const messageDiv = document.createElement('div');
@@ -410,7 +419,6 @@
         function prepareContext() {
             const currentTime = new Date().toLocaleString('id-ID');
             let context = `Data sensor Smart Classroom saat ini (${currentTime}):\n`;
-            // Tambahkan info waktu update sensor suhu
             if (sensorData.temperature) {
                 let tempInfo = `- Suhu: ${sensorData.temperature}°C`;
                 if (sensorData.temperatureTimestamp) {
@@ -440,12 +448,7 @@
                 context += `- Status Gas: ${sensorData.gasDetected ? 'Terdeteksi Bahaya!' : 'Aman'}\n`;
             }
 
-            if (
-                sensorData.temperature === undefined ||
-                sensorData.temperature === null ||
-                isNaN(sensorData.temperature) ||
-                (sensorData.temperatureTimestamp && (Date.now() - (typeof sensorData.temperatureTimestamp === 'string' ? parseInt(sensorData.temperatureTimestamp) : sensorData.temperatureTimestamp) > 5 * 60 * 1000))
-            ) {
+            if (isInactive) {
                 context += `\nPeringatan: Sensor ruangan tidak aktif atau tidak ada data terbaru!\n`;
             }
       
@@ -592,27 +595,37 @@
 
         setWeatherExpanded(false);
         
-        function checkTemperatureSensorActive() {
-            const notif = document.getElementById('notifTempInactive');
-            const tempValue = sensorData.temperature;
-            // Ambil timestamp asli dari Firebase (bukan dari DOM)
-            const tempTimestamp = sensorData.temperatureTimestamp;
-            let isInactive = false;
-            if (
-                tempValue === undefined ||
-                tempValue === null ||
-                isNaN(tempValue)
-            ) {
-                isInactive = true;
-            } else if (tempTimestamp) {
-                // tempTimestamp diasumsikan dalam ms (UNIX epoch)
-                const now = Date.now();
-                const last = typeof tempTimestamp === 'string' ? parseInt(tempTimestamp) : tempTimestamp;
-                const diffMs = now - last;
-                if (diffMs > 5 * 60 * 1000) isInactive = true; // 5 menit
-            }
-            notif.style.display = isInactive ? 'flex' : 'none';
+        // --- Notifikasi sensor mati jika gas/humidity tidak update 30 detik ---
+let lastGas = null, lastGasUpdate = 0;
+let lastHumidity = null, lastHumidityUpdate = 0;
+
+
+function checkTemperatureSensorActive() {
+    const notif = document.getElementById('notifTempInactive');
+    const now = Date.now();
+    const gas = sensorData.gas;
+    const humidity = sensorData.humidity;
+
+    // Cek perubahan nilai gas
+    if (gas !== undefined && gas !== null && !isNaN(gas)) {
+        if (lastGas !== gas) {
+            lastGas = gas;
+            lastGasUpdate = now;
         }
+    }
+    // Cek perubahan nilai humidity
+    if (humidity !== undefined && humidity !== null && !isNaN(humidity)) {
+        if (lastHumidity !== humidity) {
+            lastHumidity = humidity;
+            lastHumidityUpdate = now;
+        }
+    }
+    // Jika kedua nilai tidak update selama 30 detik, anggap sensor mati
+    const gasStale = now - lastGasUpdate > 30000;
+    const humidityStale = now - lastHumidityUpdate > 30000;
+    const isInactive = gasStale && humidityStale;
+    notif.style.display = isInactive ? 'flex' : 'none';
+}
     </script>
 </body>
 </html>
