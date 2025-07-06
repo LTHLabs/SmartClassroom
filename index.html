@@ -22,6 +22,25 @@
             <p>Monitoring Sensor Real-time dengan AI Assistant</p>
         </div>
 
+        <div class="weather-section" id="weatherSection" style="margin-bottom: 24px;">
+            <div class="weather-header" style="display: flex; align-items: center; gap: 12px;">
+                <img id="weatherIcon" src="" alt="Weather Icon" style="width:48px;height:48px;display:none;">
+                <div>
+                    <div style="font-weight:600;font-size:1.2rem;">Cuaca Kota Cirebon</div>
+                    <div id="weatherDesc" style="font-size:1rem;color:#555;">Memuat data cuaca...</div>
+                </div>
+            </div>
+            <div class="weather-info" style="margin-top:8px;display:flex;gap:24px;flex-wrap:wrap;">
+                <div><span style="font-weight:500;">Suhu:</span> <span id="weatherTemp">-</span>°C</div>
+                <div><span style="font-weight:500;">Terasa:</span> <span id="weatherFeels">-</span>°C</div>
+                <div><span style="font-weight:500;">Kelembaban:</span> <span id="weatherHumidity">-</span>%</div>
+                <div><span style="font-weight:500;">PM2.5:</span> <span id="weatherPM">-</span></div>
+                <div><span style="font-weight:500;">Waktu:</span> <span id="weatherTime">-</span></div>
+            </div>
+        </div>
+        <!-- Weather section end -->
+
+        <!-- Sensor grid -->
         <div class="sensor-grid" id="sensorGrid">
             <!-- Sensor cards akan diisi oleh JavaScript -->
         </div>
@@ -87,6 +106,7 @@
         let sensorData = {};
         let isOnline = true;
         let typingStopped = false;
+        let weatherData = null;
 
         // Sensor configuration based on your Firebase structure
         const sensorConfig = {
@@ -150,6 +170,7 @@
             setupRealtimeListeners();
             setupChatbot();
             checkConnectionStatus();
+            fetchWeatherData();
         }
 
         // Render sensor cards
@@ -294,20 +315,16 @@
         async function sendMessage() {
             const chatInput = document.getElementById('chatInput');
             const message = chatInput.value.trim();
-            
             if (!message) return;
-
             addMessageToChat(message, 'user');
             chatInput.value = '';
-
             showLoading(true);
-
             try {
-                // Prepare context with current sensor data
-                const context = prepareSensorContext();
+                // Prepare context with current sensor and weather data
+                const context = prepareContext();
                 const response = await callGeminiAPI(message, context);
-                
-                addTypingMessageToChat(response);
+                const cleaned = cleanAIBullets(response);
+                addTypingMessageToChat(cleaned);
             } catch (error) {
                 console.error('Error calling Gemini API:', error);
                 addMessageToChat('Maaf, terjadi kesalahan. Silakan coba lagi nanti.', 'bot');
@@ -337,6 +354,11 @@
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
+        function showLoading(show) {
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            loadingIndicator.style.display = show ? 'block' : 'none';
+        }
+
         function addTypingMessageToChat(message) {
             typingStopped = false;
             const chatMessages = document.getElementById('chatMessages');
@@ -364,10 +386,9 @@
         }
 
         // Prepare sensor context untuk AI
-        function prepareSensorContext() {
+        function prepareContext() {
             const currentTime = new Date().toLocaleString('id-ID');
             let context = `Data sensor Smart Classroom saat ini (${currentTime}):\n`;
-            
             if (sensorData.temperature) {
                 context += `- Suhu: ${sensorData.temperature}°C\n`;
             }
@@ -386,9 +407,18 @@
             if (sensorData.gasDetected !== undefined) {
                 context += `- Status Gas: ${sensorData.gasDetected ? 'Terdeteksi Bahaya!' : 'Aman'}\n`;
             }
-
-            context += `\nAnda adalah AI assistant untuk Smart Classroom yang memantau kondisi ruangan. Berikan analisis berdasarkan data sensor dan jawab pertanyaan dengan bahasa Indonesia yang mudah dipahami. jika pengguna tidak bertanya seputar data sensor, berikan jawaban informasi yang sesuai di tanyakan pengguna \n\n`;
-            
+            // Tambahkan data cuaca jika tersedia
+            if (weatherData) {
+                context += `\nData cuaca kota Cirebon saat ini (${weatherData.time}):\n`;
+                context += `- Suhu udara: ${weatherData.temp_c}°C\n`;
+                context += `- Suhu terasa: ${weatherData.feelslike_c}°C\n`;
+                context += `- Kelembaban: ${weatherData.humidity}%\n`;
+                context += `- Cuaca: ${weatherData.condition}\n`;
+                if (weatherData.pm2_5 !== null) context += `- PM2.5: ${weatherData.pm2_5}\n`;
+            } else {
+                context += `\nData cuaca kota Cirebon tidak tersedia saat ini.\n`;
+            }
+            context += `\nAnda adalah AI assistant untuk Smart Classroom yang memantau kondisi ruangan dan cuaca. Berikan analisis berdasarkan data sensor dan data cuaca, serta jawab pertanyaan dengan bahasa Indonesia yang mudah dipahami. Jika pengguna tidak bertanya seputar data sensor atau cuaca, berikan jawaban informasi yang sesuai dengan pertanyaan pengguna.\n\n`;
             return context;
         }
 
@@ -428,39 +458,69 @@
             return data.candidates[0].content.parts[0].text;
         }
 
-        document.addEventListener('DOMContentLoaded', initDashboard);
-
-        // Handle page visibility change
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'visible') {
-                const sensorDataRef = ref(database, 'sensorData');
-                onValue(sensorDataRef, (snapshot) => {
-                    const data = snapshot.val();
-                    if (data) {
-                        Object.keys(sensorConfig).forEach(sensorKey => {
-                            if (data.hasOwnProperty(sensorKey)) {
-                                sensorData[sensorKey] = data[sensorKey];
-                                updateSensorCard(sensorKey, {
-                                    value: data[sensorKey],
-                                    timestamp: data.timestamp || Date.now()
-                                });
-                            }
-                        });
-                    }
-                }, { onlyOnce: true });
-            }
-        });
-
-        window.initDashboard = initDashboard;
-        window.sensorConfig = sensorConfig;
-        window.sensorData = sensorData;
-
-        function showLoading(show) {
-            const loadingIndicator = document.getElementById('loadingIndicator');
-            const sendButton = document.getElementById('sendButton');
-            loadingIndicator.style.display = show ? 'block' : 'none';
-            sendButton.disabled = show;
+        function cleanAIBullets(text) {
+            // Hilangkan tanda * di awal baris (termasuk * dan **)
+            // Hilangkan juga semua tanda ** (bold markdown)
+            return text
+                .replace(/^\s*\*+\s?/gm, '')   // hilangkan * di awal baris
+                .replace(/^\s*-\s?/gm, '')      // hilangkan - di awal baris
+                .replace(/\*\*/g, '');          // hilangkan semua **
         }
+
+        // WeatherAPI: fetch and display Cirebon weather
+        async function fetchWeatherData() {
+            const API_URL = 'http://api.weatherapi.com/v1/current.json?key=c05e367e368a4fb9a1113435250607&q=Cirebon&aqi=yes';
+            const iconEl = document.getElementById('weatherIcon');
+            const descEl = document.getElementById('weatherDesc');
+            const tempEl = document.getElementById('weatherTemp');
+            const feelsEl = document.getElementById('weatherFeels');
+            const humEl = document.getElementById('weatherHumidity');
+            const pmEl = document.getElementById('weatherPM');
+            const timeEl = document.getElementById('weatherTime');
+
+            descEl.textContent = 'Memuat data cuaca...';
+            iconEl.style.display = 'none';
+            tempEl.textContent = feelsEl.textContent = humEl.textContent = pmEl.textContent = timeEl.textContent = '-';
+            weatherData = null;
+
+            try {
+                const response = await fetch(API_URL);
+                if (!response.ok) throw new Error('Gagal mengambil data cuaca');
+                const data = await response.json();
+                const c = data.current;
+                tempEl.textContent = c.temp_c;
+                feelsEl.textContent = c.feelslike_c;
+                humEl.textContent = c.humidity;
+                pmEl.textContent = c.air_quality && c.air_quality.pm2_5 !== undefined ? c.air_quality.pm2_5.toFixed(1) : '-';
+                descEl.textContent = c.condition.text;
+                timeEl.textContent = data.location.localtime;
+                if (c.condition.icon) {
+                    iconEl.src = c.condition.icon.startsWith('http') ? c.condition.icon : 'https:' + c.condition.icon;
+                    iconEl.alt = c.condition.text;
+                    iconEl.style.display = 'inline-block';
+                }
+
+                weatherData = {
+                    temp_c: c.temp_c,
+                    feelslike_c: c.feelslike_c,
+                    humidity: c.humidity,
+                    condition: c.condition.text,
+                    icon: c.condition.icon,
+                    pm2_5: c.air_quality && c.air_quality.pm2_5 !== undefined ? c.air_quality.pm2_5 : null,
+                    time: data.location.localtime
+                };
+            } catch (err) {
+                descEl.textContent = 'Gagal memuat data cuaca';
+                iconEl.style.display = 'none';
+                weatherData = null;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initDashboard();
+            fetchWeatherData();
+            setInterval(fetchWeatherData, 5 * 60 * 1000); // refresh setiap 5 menit
+        });
     </script>
 </body>
 </html>

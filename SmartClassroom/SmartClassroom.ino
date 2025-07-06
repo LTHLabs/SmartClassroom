@@ -187,3 +187,8 @@
 //   Serial.print("LDR: "); Serial.print(raw);
 //   Serial.print(" | PWM: "); Serial.println(pwmValue);
 // }
+
+
+
+
+
