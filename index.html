@@ -22,27 +22,37 @@
             <p>Monitoring Sensor Real-time dengan AI Assistant</p>
         </div>
 
-        <div class="weather-section" id="weatherSection" style="margin-bottom: 24px;">
-            <div class="weather-header" style="display: flex; align-items: center; gap: 12px;">
+        <div class="weather-section" id="weatherSection" style="margin-bottom: 24px; cursor:pointer;">
+            <div class="weather-header" id="weatherHeader" style="display: flex; align-items: center; gap: 12px;">
                 <img id="weatherIcon" src="" alt="Weather Icon" style="width:48px;height:48px;display:none;">
                 <div>
                     <div style="font-weight:600;font-size:1.2rem;">Cuaca Kota Cirebon</div>
                     <div id="weatherDesc" style="font-size:1rem;color:#555;">Memuat data cuaca...</div>
                 </div>
+                <span id="weatherExpandIcon" style="margin-left:12px;font-size:1.3rem;color:#64748b;transition:transform 0.2s;"></span>
             </div>
-            <div class="weather-info" style="margin-top:8px;display:flex;gap:24px;flex-wrap:wrap;">
+            <div class="weather-info" id="weatherInfo" style="margin-top:8px;display:flex;gap:24px;flex-wrap:wrap;max-height:0;overflow:hidden;transition:max-height 0.3s cubic-bezier(.4,0,.2,1);">
                 <div><span style="font-weight:500;">Suhu:</span> <span id="weatherTemp">-</span>°C</div>
                 <div><span style="font-weight:500;">Terasa:</span> <span id="weatherFeels">-</span>°C</div>
                 <div><span style="font-weight:500;">Kelembaban:</span> <span id="weatherHumidity">-</span>%</div>
                 <div><span style="font-weight:500;">PM2.5:</span> <span id="weatherPM">-</span></div>
                 <div><span style="font-weight:500;">Waktu:</span> <span id="weatherTime">-</span></div>
+                <div class="weather-mini-info" style="font-size:0.92em;color:#64748b;margin:4px 0 0 4px;">
+                    <div><b>PM2.5</b>: Partikel debu halus di udara (&lt;2.5μm), indikator kualitas udara. Nilai tinggi = udara kurang sehat.</div>
+                    <div><b>Zona waktu cuaca</b>: Waktu pada data cuaca mengikuti zona waktu kota Cirebon (WIB/GMT+7), bukan jam perangkat Anda.</div>
+                </div>
             </div>
         </div>
         <!-- Weather section end -->
 
+        <!-- Notifikasi sensor suhu tidak aktif -->
+        <div id="notifTempInactive" class="sensor-notif" style="display:none; margin: 16px 2rem 0 2rem;">
+            <i class="fas fa-exclamation-triangle" style="color:#ef4444"></i>
+            Sensor ruangan tidak aktif atau tidak ada data!
+        </div>
         <!-- Sensor grid -->
         <div class="sensor-grid" id="sensorGrid">
-            <!-- Sensor cards akan diisi oleh JavaScript -->
+            
         </div>
 
         <div class="chatbot-section">
@@ -108,7 +118,6 @@
         let typingStopped = false;
         let weatherData = null;
 
-        // Sensor configuration based on your Firebase structure
         const sensorConfig = {
             temperature: {
                 title: 'Suhu Ruangan',
@@ -160,7 +169,7 @@
                 unit: '',
                 color: '#dc2626',
                 getStatus: (value) => value ? 'danger' : 'normal',
-                formatValue: (value) => value ? '🚨 Gas Terdeteksi!' : '✅ Aman'
+                formatValue: (value) => value ? '🚨 Gas Terdeteksi!' : 'Aman'
             }
         };
 
@@ -222,8 +231,8 @@
         function getStatusText(status) {
             switch(status) {
                 case 'normal': return 'Normal';
-                case 'warning': return '⚠️ Perhatian';
-                case 'danger': return '🚨 Bahaya';
+                case 'warning': return 'Perhatian';
+                case 'danger': return 'Peringatan';
                 default: return '❓ Unknown';
             }
         }
@@ -238,12 +247,24 @@
                     Object.keys(sensorConfig).forEach(sensorKey => {
                         if (data.hasOwnProperty(sensorKey)) {
                             sensorData[sensorKey] = data[sensorKey];
+                            // Ambil timestamp spesifik jika ada, fallback ke data.timestamp
+                            let sensorTimestamp = null;
+                            if (sensorKey === 'temperature') {
+                                sensorTimestamp = data.temperatureTimestamp || data.timestamp || Date.now();
+                                // Simpan juga ke sensorData agar bisa dipakai di notifikasi
+                                sensorData.temperatureTimestamp = sensorTimestamp;
+                            } else {
+                                sensorTimestamp = data[`${sensorKey}Timestamp`] || data.timestamp || Date.now();
+                            }
                             updateSensorCard(sensorKey, {
                                 value: data[sensorKey],
-                                timestamp: data.timestamp || Date.now()
+                                timestamp: sensorTimestamp
                             });
                         }
                     });
+                    checkTemperatureSensorActive();
+                } else {
+                    checkTemperatureSensorActive();
                 }
             }, (error) => {
                 console.error('Error listening to sensorData:', error);
@@ -273,7 +294,7 @@
             statusElement.className = `sensor-status status-${status}`;
             statusElement.textContent = statusText;
 
-            // Add animation effect
+            // Add animation effect😎
             const card = document.getElementById(`sensor-${sensorKey}`);
             card.style.transform = 'scale(1.02)';
             setTimeout(() => {
@@ -389,8 +410,19 @@
         function prepareContext() {
             const currentTime = new Date().toLocaleString('id-ID');
             let context = `Data sensor Smart Classroom saat ini (${currentTime}):\n`;
+            // Tambahkan info waktu update sensor suhu
             if (sensorData.temperature) {
-                context += `- Suhu: ${sensorData.temperature}°C\n`;
+                let tempInfo = `- Suhu: ${sensorData.temperature}°C`;
+                if (sensorData.temperatureTimestamp) {
+                    const lastUpdate = new Date(
+                        typeof sensorData.temperatureTimestamp === 'string' ? parseInt(sensorData.temperatureTimestamp) : sensorData.temperatureTimestamp
+                    );
+                    const now = new Date();
+                    const diffMs = now - lastUpdate;
+                    const diffMin = Math.floor(diffMs / 60000);
+                    tempInfo += ` (update ${diffMin} menit yang lalu)`;
+                }
+                context += tempInfo + '\n';
             }
             if (sensorData.humidity) {
                 context += `- Kelembaban: ${sensorData.humidity}%\n`;
@@ -407,7 +439,16 @@
             if (sensorData.gasDetected !== undefined) {
                 context += `- Status Gas: ${sensorData.gasDetected ? 'Terdeteksi Bahaya!' : 'Aman'}\n`;
             }
-            // Tambahkan data cuaca jika tersedia
+
+            if (
+                sensorData.temperature === undefined ||
+                sensorData.temperature === null ||
+                isNaN(sensorData.temperature) ||
+                (sensorData.temperatureTimestamp && (Date.now() - (typeof sensorData.temperatureTimestamp === 'string' ? parseInt(sensorData.temperatureTimestamp) : sensorData.temperatureTimestamp) > 5 * 60 * 1000))
+            ) {
+                context += `\nPeringatan: Sensor ruangan tidak aktif atau tidak ada data terbaru!\n`;
+            }
+      
             if (weatherData) {
                 context += `\nData cuaca kota Cirebon saat ini (${weatherData.time}):\n`;
                 context += `- Suhu udara: ${weatherData.temp_c}°C\n`;
@@ -459,12 +500,10 @@
         }
 
         function cleanAIBullets(text) {
-            // Hilangkan tanda * di awal baris (termasuk * dan **)
-            // Hilangkan juga semua tanda ** (bold markdown)
             return text
-                .replace(/^\s*\*+\s?/gm, '')   // hilangkan * di awal baris
-                .replace(/^\s*-\s?/gm, '')      // hilangkan - di awal baris
-                .replace(/\*\*/g, '');          // hilangkan semua **
+                .replace(/^\s*\*+\s?/gm, '')   
+                .replace(/^\s*-\s?/gm, '')      
+                .replace(/\*\*/g, '');          
         }
 
         // WeatherAPI: fetch and display Cirebon weather
@@ -519,8 +558,61 @@
         document.addEventListener('DOMContentLoaded', () => {
             initDashboard();
             fetchWeatherData();
-            setInterval(fetchWeatherData, 5 * 60 * 1000); // refresh setiap 5 menit
+            setInterval(fetchWeatherData, 5 * 60 * 1000); 
         });
+
+        // Weather section expand/collapse
+        const weatherHeader = document.getElementById('weatherHeader');
+        const weatherInfo = document.getElementById('weatherInfo');
+        const weatherExpandIcon = document.getElementById('weatherExpandIcon');
+
+        weatherHeader.addEventListener('click', () => {
+            const isExpanded = weatherInfo.style.maxHeight && weatherInfo.style.maxHeight !== '0px';
+            weatherInfo.style.maxHeight = isExpanded ? '0' : weatherInfo.scrollHeight + 'px';
+            weatherExpandIcon.style.transform = isExpanded ? 'rotate(0deg)' : 'rotate(180deg)';
+        });
+
+        let weatherExpanded = false;
+        const weatherSection = document.getElementById('weatherSection');
+
+        function setWeatherExpanded(expand) {
+            weatherExpanded = expand;
+            if (expand) {
+                weatherInfo.style.maxHeight = '200px'; 
+                weatherExpandIcon.style.transform = 'rotate(180deg)';
+            } else {
+                weatherInfo.style.maxHeight = '0';
+                weatherExpandIcon.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        weatherSection.addEventListener('click', () => {
+            setWeatherExpanded(!weatherExpanded);
+        });
+
+        setWeatherExpanded(false);
+        
+        function checkTemperatureSensorActive() {
+            const notif = document.getElementById('notifTempInactive');
+            const tempValue = sensorData.temperature;
+            // Ambil timestamp asli dari Firebase (bukan dari DOM)
+            const tempTimestamp = sensorData.temperatureTimestamp;
+            let isInactive = false;
+            if (
+                tempValue === undefined ||
+                tempValue === null ||
+                isNaN(tempValue)
+            ) {
+                isInactive = true;
+            } else if (tempTimestamp) {
+                // tempTimestamp diasumsikan dalam ms (UNIX epoch)
+                const now = Date.now();
+                const last = typeof tempTimestamp === 'string' ? parseInt(tempTimestamp) : tempTimestamp;
+                const diffMs = now - last;
+                if (diffMs > 5 * 60 * 1000) isInactive = true; // 5 menit
+            }
+            notif.style.display = isInactive ? 'flex' : 'none';
+        }
     </script>
 </body>
 </html>
