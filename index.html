@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Classroom Dashboard</title>
+    <title>Smart IoTernak Dashboard</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome Icons -->
@@ -18,10 +18,9 @@
     </div>
     <div class="dashboard-container">
         <div class="header">
-            <h1><i class="fas fa-microchip"></i> Smart Classroom</h1>
+            <h1><i class="fa-solid fa-dove"></i> IoTernak</h1>
             <p>Monitoring Sensor Real-time dengan AI Assistant</p>
         </div>
-
         <div class="weather-section" id="weatherSection" style="margin-bottom: 24px; cursor:pointer;">
         <a href="dashboard-graph.html" class="btn btn-outline-primary"><i class="fas fa-home"></i>Monitor</a>
             <div class="weather-header" id="weatherHeader" style="display: flex; align-items: center; gap: 12px;">
@@ -66,7 +65,7 @@
                         <i class="fas fa-robot"></i>
                     </div>
                     <div class="message-content">
-                        Halo! Saya adalah AI Assistant untuk Smart Classroom. Anda bisa bertanya tentang data sensor, kondisi ruangan, atau meminta analisis data. Bagaimana saya bisa membantu Anda?
+                        Halo! Saya adalah AI Assistant untuk IoTernak. Anda bisa bertanya tentang data sensor, kondisi kandang, atau meminta analisis data. Bagaimana saya bisa membantu Anda?
                     </div>
                 </div>
             </div>
@@ -122,7 +121,7 @@
 
         const sensorConfig = {
             temperature: {
-                title: 'Suhu Ruangan',
+                title: 'Suhu',
                 icon: 'fas fa-thermometer-half',
                 unit: '°C',
                 color: '#ef4444',
@@ -418,7 +417,7 @@
         // Prepare sensor context untuk AI
         function prepareContext() {
             const currentTime = new Date().toLocaleString('id-ID');
-            let context = `Data sensor Smart Classroom saat ini (${currentTime}):\n`;
+            let context = `Data sensor kualitas kandang saat ini (${currentTime}):\n`;
             if (sensorData.temperature) {
                 let tempInfo = `- Suhu: ${sensorData.temperature}°C`;
                 if (sensorData.temperatureTimestamp) {
@@ -449,11 +448,11 @@
             }
 
             if (isInactive) {
-                context += `\nPeringatan: Sensor ruangan tidak aktif atau tidak ada data terbaru!\n`;
+                context += `\nPeringatan: Sensor  tidak aktif atau tidak ada data terbaru!\n`;
             }
       
             if (weatherData) {
-                context += `\nData cuaca kota Cirebon saat ini (${weatherData.time}):\n`;
+                context += `\nData cuaca di sekitar kota Cirebon saat ini (${weatherData.time}):\n`;
                 context += `- Suhu udara: ${weatherData.temp_c}°C\n`;
                 context += `- Suhu terasa: ${weatherData.feelslike_c}°C\n`;
                 context += `- Kelembaban: ${weatherData.humidity}%\n`;
@@ -462,7 +461,9 @@
             } else {
                 context += `\nData cuaca kota Cirebon tidak tersedia saat ini.\n`;
             }
-            context += `\nAnda adalah AI assistant untuk Smart Classroom yang memantau kondisi ruangan dan cuaca. Berikan analisis berdasarkan data sensor dan data cuaca, serta jawab pertanyaan dengan bahasa Indonesia yang mudah dipahami. Jika pengguna tidak bertanya seputar data sensor atau cuaca, berikan jawaban informasi yang sesuai dengan pertanyaan pengguna.\n\n`;
+            context += `\nAnda adalah asisten IoTernak yang membantu monitoring peternakan ayam.Anda bisa:
+1. Memberikan informasi tentang kondisi sensor
+2. Memberikan saran berdasarkan data sensor dan Berikan respons yang informatif dan membantu dalam bahasa Indonesia.\n\n`;
             return context;
         }
 
