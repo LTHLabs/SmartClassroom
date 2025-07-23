@@ -240,7 +240,6 @@ function cleanDatasetFromLocalStorage() {
     dataset = cleanData;
 
 }
-
 function saveCurrentData() {
      const now = Date.now();
     if (now - lastSavedTime < 1000) return; // Cegah simpan kalau < 5 detik
