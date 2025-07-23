@@ -66,9 +66,14 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 
-let dataset = [];
+// Inisialisasi dataset dari localStorage
+let dataset = JSON.parse(localStorage.getItem('smartclassroom_dataset')) || [];
+cleanDatasetFromLocalStorage(); // Tambahkan ini
+
 let sensorData = { temperature: null, humidity: null, ldr: null, gas: null };
 let weatherData = { temp_c: null, humidity: null, condition: '', pm2_5: null, time: '' };
+let lastSavedRow = null;
+let lastSavedTime = 0;
 
 // --- ECharts Setup ---
 const chartRoom = echarts.init(document.getElementById('chartRoom'));
@@ -137,6 +142,42 @@ let weatherOption = {
         { name: 'PM2.5 (μg/m³)', type: 'line', data: [], smooth: true, color: '#a16207' }
     ]
 };
+function cleanPadding(option) {
+    while (option.xAxis.data.length && option.xAxis.data[0] === '') {
+        option.xAxis.data.shift();
+        option.series.forEach(s => s.data.shift());
+    }
+}
+function addDataToChart(option, label, values) {
+    option.xAxis.data.push(label);
+    values.forEach((val, i) => {
+        option.series[i].data.push(val);
+    });
+}
+function trimChartLength(option, maxLen) {
+    while (option.xAxis.data.length > maxLen) {
+        option.xAxis.data.shift();
+        option.series.forEach(s => s.data.shift());
+    }
+}
+function padChart(option, maxLen) {
+    const padCount = maxLen - option.xAxis.data.length;
+    for (let i = 0; i < padCount; i++) {
+        option.xAxis.data.unshift('');
+        option.series.forEach(s => s.data.unshift(null));
+    }
+    return padCount;
+}
+function forwardFill(option) {
+    option.series.forEach(s => {
+        for (let i = 1; i < s.data.length; i++) {
+            if (s.data[i] === null && option.xAxis.data[i] !== '') {
+                s.data[i] = s.data[i - 1];
+            }
+        }
+    });
+}
+
 // Load data grafik dari localStorage jika ada (tanpa padding)
 loadChartData('smartclassroom_chartRoom', roomOption, maxLen);
 loadChartData('smartclassroom_chartWeather', weatherOption, maxLen);
@@ -181,9 +222,34 @@ async function fetchWeatherData() {
 }
 
 // --- Simpan Data ke Local Storage ---
+function isValidData(row) {
+    return row.env_temp !== null &&
+           row.env_humidity !== null &&
+           row.env_light !== null &&
+           row.env_gas !== null &&
+           row.weather_temp !== null &&
+           row.weather_humidity !== null &&
+           row.weather_pm25 !== null;
+}
+function cleanDatasetFromLocalStorage() {
+    const raw = localStorage.getItem('smartclassroom_dataset');
+    if (!raw) return;
+    const oldData = JSON.parse(raw);
+    const cleanData = oldData.filter(isValidData);
+    localStorage.setItem('smartclassroom_dataset', JSON.stringify(cleanData));
+    dataset = cleanData;
+}
+
 function saveCurrentData() {
+     const now = Date.now();
+    if (now - lastSavedTime < 1000) return; // Cegah simpan kalau < 5 detik
+    lastSavedTime = now;
     const row = {
-        timestamp: weatherData.time || new Date().toLocaleString('id-ID', { hour12: false }),
+        timestamp: new Date().toLocaleString('id-ID', {
+    hour12: false,
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit'
+}),
         env_temp: sensorData.temperature,
         env_humidity: sensorData.humidity,
         env_light: sensorData.ldr,
@@ -193,136 +259,289 @@ function saveCurrentData() {
         weather_condition: weatherData.condition,
         weather_pm25: weatherData.pm2_5
     };
-    dataset.push(row);
-    localStorage.setItem('smartclassroom_dataset', JSON.stringify(dataset));
+
+
+    if (isValidData(row)) {
+        dataset.push(row);
+        localStorage.setItem('smartclassroom_dataset', JSON.stringify(dataset));
+    } else {
+        console.warn("⛔ Data tidak lengkap, tidak disimpan:", row);
+    }
 }
 
+function resetDataset() {
+    const confirmReset = confirm("Apakah kamu yakin ingin menghapus semua data dataset?");
+    if (confirmReset) {
+        localStorage.removeItem('smartclassroom_dataset');
+        dataset = [];
+        alert("✅ Dataset berhasil di-reset!");
+        // Tambahkan pemanggilan fungsi render ulang jika ada tabel/chart yang bergantung
+        updateChart(); // Jika kamu punya chart yang perlu di-refresh
+    }
+}
+document.addEventListener('DOMContentLoaded', () => {
+    const resetBtn = document.createElement('button');
+    resetBtn.className = 'btn btn-danger btn-sm';
+    resetBtn.innerHTML = '<i class="fas fa-trash"></i> Reset Dataset';
+    resetBtn.onclick = resetDataset;
+    document.querySelector('.d-flex.justify-content-between.align-items-center.mb-2').appendChild(resetBtn);
+});
+
+
+
 // --- Filter Dataset Berdasarkan Waktu ---
+function getISOWeek(d) {
+    const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    const dayNum = date.getUTCDay() || 7;
+    date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+    return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+}
+
 function filterDatasetByTime(dataset, filter) {
     if (filter === 'all') return dataset;
+
     const now = new Date();
+
     return dataset.filter(row => {
-        const t = new Date(row.timestamp.replace(' ', 'T'));
+        const t = new Date(row.timestamp);
+        if (isNaN(t.getTime())) return false;
+
         if (filter === 'day') {
-            return t.getFullYear() === now.getFullYear() && t.getMonth() === now.getMonth() && t.getDate() === now.getDate();
+            return t.toDateString() === now.toDateString();
         } else if (filter === 'week') {
-            // Cek minggu yang sama (ISO week)
-            const getWeek = d => {
-                d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-                d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
-                const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
-                return Math.ceil((((d - yearStart) / 86400000) + 1)/7);
-            };
-            return t.getFullYear() === now.getFullYear() && getWeek(t) === getWeek(now);
+            return (
+                t.getFullYear() === now.getFullYear() &&
+                getISOWeek(t) === getISOWeek(now)
+            );
         } else if (filter === 'month') {
-            return t.getFullYear() === now.getFullYear() && t.getMonth() === now.getMonth();
+            return (
+                t.getFullYear() === now.getFullYear() &&
+                t.getMonth() === now.getMonth()
+            );
         }
+
         return true;
     });
 }
 
+
 // --- Ekspor CSV ---
+function formatValue(val, decimals = 2) {
+    if (val === null || val === undefined || val === '') return '-';
+    if (typeof val === 'number') return val.toFixed(decimals);
+    return String(val).replace(/,/g, ';'); // ganti koma agar tidak bentrok di CSV
+}
+
 function exportCSV() {
     const filter = document.getElementById('filterWaktu').value;
     const filtered = filterDatasetByTime(dataset, filter);
-    let csv = 'timestamp,env_temp,env_humidity,env_light,env_gas,weather_temp,weather_humidity,weather_condition,weather_pm25\n';
+
+    const headers = [
+        'timestamp',
+        'env_temp',
+        'env_humidity',
+        'env_light',
+        'env_gas',
+        'weather_temp',
+        'weather_humidity',
+        'weather_condition',
+        'weather_pm25'
+    ];
+
+    const csvRows = [headers.join(',')];
+
     filtered.forEach(row => {
-        csv += `${row.timestamp},${row.env_temp},${row.env_humidity},${row.env_light},${row.env_gas},${row.weather_temp},${row.weather_humidity},${row.weather_condition},${row.weather_pm25}\n`;
+        const rowValues = headers.map(h => {
+            let value = row[h];
+            if (typeof value === 'string') {
+                // Escape comma and quote
+                value = `"${value.replace(/"/g, '""')}"`;
+            }
+            return value ?? '';
+        });
+        csvRows.push(rowValues.join(','));
     });
-    const blob = new Blob([csv], { type: 'text/csv' });
+
+    const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `smartclassroom_dataset_${filter}_${new Date().toISOString().slice(0,10)}.csv`;
+    a.download = `smartclassroom_dataset_${filter}_${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
 }
 
 document.getElementById('btnExport').addEventListener('click', exportCSV);
 
-// --- Update Data & Chart ---
-async function updateDataAndChart() {
-    await fetchWeatherData();
-    const label = weatherData.time || new Date().toLocaleString('id-ID', { hour12: false });
-    // Hapus padding sebelum push data baru
+function syncChartData(option, maxLen) {
+    while (option.xAxis.data.length > maxLen) {
+        option.xAxis.data.shift();
+        option.series.forEach(s => s.data.shift());
+    }
+
+    option.series.forEach(s => {
+        while (s.data.length < option.xAxis.data.length) s.data.unshift(null);
+        while (s.data.length > option.xAxis.data.length) s.data.shift();
+    });
+
+    const pad = maxLen - option.xAxis.data.length;
+    for (let i = 0; i < pad; i++) {
+        option.xAxis.data.unshift('');
+        option.series.forEach(s => s.data.unshift(null));
+    }
+
+    return pad; // agar bisa dipakai untuk simpan tanpa padding
+}
+function forwardFillNull(option) {
+    option.series.forEach(s => {
+        for (let i = 1; i < s.data.length; i++) {
+            if (s.data[i] === null && option.xAxis.data[i] !== '') {
+                s.data[i] = s.data[i - 1];
+            }
+        }
+    });
+}
+function updateRoomChart(label, sensorData) {
+    // Bersihkan padding
     while (roomOption.xAxis.data.length && roomOption.xAxis.data[0] === '') {
         roomOption.xAxis.data.shift();
         roomOption.series.forEach(s => s.data.shift());
     }
-    while (weatherOption.xAxis.data.length && weatherOption.xAxis.data[0] === '') {
-        weatherOption.xAxis.data.shift();
-        weatherOption.series.forEach(s => s.data.shift());
-    }
-    // Update room chart
+
+    // Tambahkan data baru
     roomOption.xAxis.data.push(label);
     roomOption.series[0].data.push(sensorData.temperature);
     roomOption.series[1].data.push(sensorData.humidity);
     roomOption.series[2].data.push(sensorData.ldr);
     roomOption.series[3].data.push(sensorData.gas);
-    // Batas maksimum maxLen data
-    while (roomOption.xAxis.data.length > maxLen) {
-        roomOption.xAxis.data.shift();
-        roomOption.series.forEach(s => s.data.shift());
-    }
-    // Pastikan semua series sama panjang dengan xAxis
-    roomOption.series.forEach(s => {
-        while (s.data.length < roomOption.xAxis.data.length) s.data.unshift(null);
-        while (s.data.length > roomOption.xAxis.data.length) s.data.shift();
-    });
-    // Padding hanya untuk tampilan
-    let padRoom = maxLen - roomOption.xAxis.data.length;
-    for (let i = 0; i < padRoom; i++) {
-        roomOption.xAxis.data.unshift('');
-        roomOption.series.forEach(s => s.data.unshift(null));
-    }
-    // Forward fill data null di tengah agar line tidak terputus
-    roomOption.series.forEach(s => {
-        for (let i = 1; i < s.data.length; i++) {
-            if (s.data[i] === null && roomOption.xAxis.data[i] !== '') {
-                s.data[i] = s.data[i-1];
-            }
-        }
-    });
-    chartRoom.setOption(roomOption);
-    // Simpan data grafik ke localStorage (tanpa padding)
-    localStorage.setItem('smartclassroom_chartRoom', JSON.stringify({
-        xAxis: roomOption.xAxis.data.slice(padRoom),
-        series: roomOption.series.map(s => s.data.slice(padRoom))
-    }));
 
-    // Update weather chart
+    const pad = syncChartData(roomOption, maxLen);
+    forwardFillNull(roomOption);
+
+    chartRoom.setOption(roomOption);
+
+    // Simpan ke localStorage tanpa padding
+    localStorage.setItem('smartclassroom_chartRoom', JSON.stringify({
+        xAxis: roomOption.xAxis.data.slice(pad),
+        series: roomOption.series.map(s => s.data.slice(pad))
+    }));
+}
+function updateWeatherChart(label, weatherData) {
+    while (weatherOption.xAxis.data.length && weatherOption.xAxis.data[0] === '') {
+        weatherOption.xAxis.data.shift();
+        weatherOption.series.forEach(s => s.data.shift());
+    }
+
     weatherOption.xAxis.data.push(label);
     weatherOption.series[0].data.push(weatherData.temp_c);
     weatherOption.series[1].data.push(weatherData.humidity);
     weatherOption.series[2].data.push(weatherData.pm2_5);
-    while (weatherOption.xAxis.data.length > maxLen) {
-        weatherOption.xAxis.data.shift();
-        weatherOption.series.forEach(s => s.data.shift());
-    }
-    weatherOption.series.forEach(s => {
-        while (s.data.length < weatherOption.xAxis.data.length) s.data.unshift(null);
-        while (s.data.length > weatherOption.xAxis.data.length) s.data.shift();
-    });
-    let padWeather = maxLen - weatherOption.xAxis.data.length;
-    for (let i = 0; i < padWeather; i++) {
-        weatherOption.xAxis.data.unshift('');
-        weatherOption.series.forEach(s => s.data.unshift(null));
-    }
-    weatherOption.series.forEach(s => {
-        for (let i = 1; i < s.data.length; i++) {
-            if (s.data[i] === null && weatherOption.xAxis.data[i] !== '') {
-                s.data[i] = s.data[i-1];
-            }
-        }
-    });
+
+    const pad = syncChartData(weatherOption, maxLen);
+    forwardFillNull(weatherOption);
+
     chartWeather.setOption(weatherOption);
+
     localStorage.setItem('smartclassroom_chartWeather', JSON.stringify({
-        xAxis: weatherOption.xAxis.data.slice(padWeather),
-        series: weatherOption.series.map(s => s.data.slice(padWeather))
+        xAxis: weatherOption.xAxis.data.slice(pad),
+        series: weatherOption.series.map(s => s.data.slice(pad))
     }));
-    // Simpan data otomatis setiap update
+}
+async function updateDataAndChart() {
+    await fetchWeatherData();
+    const label = weatherData.time || new Date().toLocaleString('id-ID', { hour12: false });
+    updateRoomChart(label, sensorData);
+    updateWeatherChart(label, weatherData);
     saveCurrentData();
 }
+
+
+
+// --- Update Data & Chart ---
+// async function updateDataAndChart() {
+//     await fetchWeatherData();
+//     const label = weatherData.time || new Date().toLocaleString('id-ID', { hour12: false });
+//     // Hapus padding sebelum push data baru
+//     while (roomOption.xAxis.data.length && roomOption.xAxis.data[0] === '') {
+//         roomOption.xAxis.data.shift();
+//         roomOption.series.forEach(s => s.data.shift());
+//     }
+//     while (weatherOption.xAxis.data.length && weatherOption.xAxis.data[0] === '') {
+//         weatherOption.xAxis.data.shift();
+//         weatherOption.series.forEach(s => s.data.shift());
+//     }
+//     // Update room chart
+//     roomOption.xAxis.data.push(label);
+//     roomOption.series[0].data.push(sensorData.temperature);
+//     roomOption.series[1].data.push(sensorData.humidity);
+//     roomOption.series[2].data.push(sensorData.ldr);
+//     roomOption.series[3].data.push(sensorData.gas);
+//     // Batas maksimum maxLen data
+//     while (roomOption.xAxis.data.length > maxLen) {
+//         roomOption.xAxis.data.shift();
+//         roomOption.series.forEach(s => s.data.shift());
+//     }
+//     // Pastikan semua series sama panjang dengan xAxis
+//     roomOption.series.forEach(s => {
+//         while (s.data.length < roomOption.xAxis.data.length) s.data.unshift(null);
+//         while (s.data.length > roomOption.xAxis.data.length) s.data.shift();
+//     });
+//     // Padding hanya untuk tampilan
+//     let padRoom = maxLen - roomOption.xAxis.data.length;
+//     for (let i = 0; i < padRoom; i++) {
+//         roomOption.xAxis.data.unshift('');
+//         roomOption.series.forEach(s => s.data.unshift(null));
+//     }
+//     // Forward fill data null di tengah agar line tidak terputus
+//     roomOption.series.forEach(s => {
+//         for (let i = 1; i < s.data.length; i++) {
+//             if (s.data[i] === null && roomOption.xAxis.data[i] !== '') {
+//                 s.data[i] = s.data[i-1];
+//             }
+//         }
+//     });
+//     chartRoom.setOption(roomOption);
+//     // Simpan data grafik ke localStorage (tanpa padding)
+//     localStorage.setItem('smartclassroom_chartRoom', JSON.stringify({
+//         xAxis: roomOption.xAxis.data.slice(padRoom),
+//         series: roomOption.series.map(s => s.data.slice(padRoom))
+//     }));
+
+//     // Update weather chart
+//     weatherOption.xAxis.data.push(label);
+//     weatherOption.series[0].data.push(weatherData.temp_c);
+//     weatherOption.series[1].data.push(weatherData.humidity);
+//     weatherOption.series[2].data.push(weatherData.pm2_5);
+//     while (weatherOption.xAxis.data.length > maxLen) {
+//         weatherOption.xAxis.data.shift();
+//         weatherOption.series.forEach(s => s.data.shift());
+//     }
+
+//     weatherOption.series.forEach(s => {
+//         while (s.data.length < weatherOption.xAxis.data.length) s.data.unshift(null);
+//         while (s.data.length > weatherOption.xAxis.data.length) s.data.shift();
+//     });
+//     let padWeather = maxLen - weatherOption.xAxis.data.length;
+//     for (let i = 0; i < padWeather; i++) {
+//         weatherOption.xAxis.data.unshift('');
+//         weatherOption.series.forEach(s => s.data.unshift(null));
+//     }
+//     weatherOption.series.forEach(s => {
+//         for (let i = 1; i < s.data.length; i++) {
+//             if (s.data[i] === null && weatherOption.xAxis.data[i] !== '') {
+//                 s.data[i] = s.data[i-1];
+//             }
+//         }
+//     });
+//     chartWeather.setOption(weatherOption);
+//     localStorage.setItem('smartclassroom_chartWeather', JSON.stringify({
+//         xAxis: weatherOption.xAxis.data.slice(padWeather),
+//         series: weatherOption.series.map(s => s.data.slice(padWeather))
+//     }));
+//     // Simpan data otomatis setiap update
+//     saveCurrentData();
+// }
 
 window.onload = function() {
     const saved = localStorage.getItem('smartclassroom_dataset');
@@ -331,7 +550,7 @@ window.onload = function() {
     }
     listenSensorData();
     updateDataAndChart();
-    setInterval(updateDataAndChart, 5000);
+    setInterval(updateDataAndChart, 2000);
 };
 </script>
 </body>
