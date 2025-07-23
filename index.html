@@ -1,212 +1,303 @@
 <!DOCTYPE html>
 <html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart IoTernak Dashboard</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Classroom Dashboard</title>
     <!-- Bootstrap CSS -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
     <!-- Font Awesome Icons -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
-</head>
-<body>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
     <div class="offline-indicator" id="offlineIndicator">
-        ⚠️ Koneksi terputus - Data mungkin tidak real-time
+      ⚠️ Koneksi terputus - Data mungkin tidak real-time
     </div>
     <div class="dashboard-container">
-        <div class="header">
-            <h1><i class="fa-solid fa-dove"></i> IoTernak</h1>
-            <p>Monitoring Sensor Real-time dengan AI Assistant</p>
-        </div>
-        <div class="weather-section" id="weatherSection" style="margin-bottom: 24px; cursor:pointer;">
-        <a href="dashboard-graph.html" class="btn btn-outline-primary"><i class="fas fa-home"></i>Monitor</a>
-            <div class="weather-header" id="weatherHeader" style="display: flex; align-items: center; gap: 12px;">
-                <img id="weatherIcon" src="" alt="Weather Icon" style="width:48px;height:48px;display:none;">
-                <div>
-                    <div style="font-weight:600;font-size:1.2rem;">Cuaca Kota Cirebon</div>
-                    <div id="weatherDesc" style="font-size:1rem;color:#555;">Memuat data cuaca...</div>
-                </div>
-                <span id="weatherExpandIcon" style="margin-left:12px;font-size:1.3rem;color:#64748b;transition:transform 0.2s;"></span>
+      <div class="header">
+        <h1><i class="fas fa-microchip"></i> SmartClassroom</h1>
+        <p>Monitoring Sensor Real-time dengan AI Assistant</p>
+      </div>
+      <div
+        class="weather-section"
+        id="weatherSection"
+        style="margin-bottom: 24px; cursor: pointer"
+      >
+        <a href="dashboard-graph.html" class="btn btn-outline-primary"
+          ><i class="fas fa-home"></i>Monitor</a
+        >
+        <div
+          class="weather-header"
+          id="weatherHeader"
+          style="display: flex; align-items: center; gap: 12px"
+        >
+          <img
+            id="weatherIcon"
+            src=""
+            alt="Weather Icon"
+            style="width: 48px; height: 48px; display: none"
+          />
+          <div>
+            <div style="font-weight: 600; font-size: 1.2rem">
+              Cuaca Kota Cirebon
             </div>
-            <div class="weather-info" id="weatherInfo" style="margin-top:8px;display:flex;gap:24px;flex-wrap:wrap;max-height:0;overflow:hidden;transition:max-height 0.3s cubic-bezier(.4,0,.2,1);">
-                <div><span style="font-weight:500;">Suhu:</span> <span id="weatherTemp">-</span>°C</div>
-                <div><span style="font-weight:500;">Terasa:</span> <span id="weatherFeels">-</span>°C</div>
-                <div><span style="font-weight:500;">Kelembaban:</span> <span id="weatherHumidity">-</span>%</div>
-                <div><span style="font-weight:500;">PM2.5:</span> <span id="weatherPM">-</span></div>
-                <div><span style="font-weight:500;">Waktu:</span> <span id="weatherTime">-</span></div>
-                <div class="weather-mini-info" style="font-size:0.92em;color:#64748b;margin:4px 0 0 4px;">
-                    <div><b>PM2.5</b>: Partikel debu halus di udara (&lt;2.5μm), indikator kualitas udara. Nilai tinggi = udara kurang sehat.</div>
-                    <div><b>Zona waktu cuaca</b>: Waktu pada data cuaca mengikuti zona waktu kota Cirebon (WIB/GMT+7), bukan jam perangkat Anda.</div>
-                </div>
+            <div id="weatherDesc" style="font-size: 1rem; color: #555">
+              Memuat data cuaca...
             </div>
+          </div>
+          <span
+            id="weatherExpandIcon"
+            style="
+              margin-left: 12px;
+              font-size: 1.3rem;
+              color: #64748b;
+              transition: transform 0.2s;
+            "
+          ></span>
         </div>
-        <!-- Weather section end -->
+        <div
+          class="weather-info"
+          id="weatherInfo"
+          style="
+            margin-top: 8px;
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          "
+        >
+          <div>
+            <span style="font-weight: 500">Suhu:</span>
+            <span id="weatherTemp">-</span>°C
+          </div>
+          <div>
+            <span style="font-weight: 500">Terasa:</span>
+            <span id="weatherFeels">-</span>°C
+          </div>
+          <div>
+            <span style="font-weight: 500">Kelembaban:</span>
+            <span id="weatherHumidity">-</span>%
+          </div>
+          <div>
+            <span style="font-weight: 500">PM2.5:</span>
+            <span id="weatherPM">-</span>
+          </div>
+          <div>
+            <span style="font-weight: 500">Waktu:</span>
+            <span id="weatherTime">-</span>
+          </div>
+          <div
+            class="weather-mini-info"
+            style="font-size: 0.92em; color: #64748b; margin: 4px 0 0 4px"
+          >
+            <div>
+              <b>PM2.5</b>: Partikel debu halus di udara (&lt;2.5μm), indikator
+              kualitas udara. Nilai tinggi = udara kurang sehat.
+            </div>
+            <div>
+              <b>Zona waktu cuaca</b>: Waktu pada data cuaca mengikuti zona
+              waktu kota Cirebon (WIB/GMT+7), bukan jam perangkat Anda.
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Weather section end -->
 
-        <!-- Notifikasi sensor suhu tidak aktif -->
-        <div id="notifTempInactive" class="sensor-notif" style="display:none; margin: 16px 2rem 0 2rem;">
-            <i class="fas fa-exclamation-triangle" style="color:#ef4444"></i>
-            
-        </div>
-        <!-- Sensor grid -->
-        <div class="sensor-grid" id="sensorGrid">
-            
-        </div>
+      <!-- Notifikasi sensor suhu tidak aktif -->
+      <div
+        id="notifTempInactive"
+        class="sensor-notif"
+        style="display: none; margin: 16px 2rem 0 2rem"
+      >
+        <i class="fas fa-exclamation-triangle" style="color: #ef4444"></i>
+      </div>
+      <!-- Sensor grid -->
+      <div class="sensor-grid" id="sensorGrid"></div>
 
-        <div class="chatbot-section">
-            <div class="chatbot-header">
-                <i class="fas fa-robot"></i> AI Assistant - Tanya tentang data sensor
-            </div>
-            <div class="chat-messages" id="chatMessages">
-                <div class="message bot">
-                    <div class="message-avatar">
-                        <i class="fas fa-robot"></i>
-                    </div>
-                    <div class="message-content">
-                        Halo! Saya adalah AI Assistant untuk IoTernak. Anda bisa bertanya tentang data sensor, kondisi kandang, atau meminta analisis data. Bagaimana saya bisa membantu Anda?
-                    </div>
-                </div>
-            </div>
-            <div class="loading-indicator" id="loadingIndicator">
-                <span class="loading-dots">● ● ●</span> AI sedang berpikir...
-            </div>
-            <div class="chat-input-section">
-                <div class="input-group">
-                    <input type="text" class="form-control" id="chatInput" 
-                           placeholder="Tanya tentang kondisi sensor, suhu ruangan, dll..." 
-                           maxlength="500">
-                    <button class="btn btn-primary" id="sendButton">
-                        <i class="fas fa-paper-plane"></i> Kirim
-                    </button>
-                    <button class="btn btn-danger" id="stopButton" type="button" style="margin-left:8px;">
-                        <i class="fas fa-stop"></i> Stop
-                    </button>
-                </div>
-            </div>
+      <div class="chatbot-section">
+        <div class="chatbot-header">
+          <i class="fas fa-robot"></i> AI Assistant - Tanya tentang data sensor
         </div>
+        <div class="chat-messages" id="chatMessages">
+          <div class="message bot">
+            <div class="message-avatar">
+              <i class="fas fa-robot"></i>
+            </div>
+            <div class="message-content">
+              Halo! Saya adalah AI Assistant SmartClassroom. Anda bisa bertanya
+              tentang data sensor, kondisi Ruangan, atau meminta analisis data.
+              Bagaimana saya bisa membantu Anda?
+            </div>
+          </div>
+        </div>
+        <div class="loading-indicator" id="loadingIndicator">
+          <span class="loading-dots">● ● ●</span> AI sedang berpikir...
+        </div>
+        <div class="chat-input-section">
+          <div class="input-group">
+            <input
+              type="text"
+              class="form-control"
+              id="chatInput"
+              placeholder="Tanya tentang kondisi sensor, suhu ruangan, dll..."
+              maxlength="500"
+            />
+            <button class="btn btn-primary" id="sendButton">
+              <i class="fas fa-paper-plane"></i> Kirim
+            </button>
+            <button
+              class="btn btn-danger"
+              id="stopButton"
+              type="button"
+              style="margin-left: 8px"
+            >
+              <i class="fas fa-stop"></i> Stop
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
-    
     <!-- Firebase SDK v9 Modular -->
     <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getDatabase, ref, onValue, off } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
-        
-        // Firebase Configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyD_jg2mFvR0GIp7rcO5eusQkf06mYdbPGA",
-            authDomain: "smartclassroom-416bc.firebaseapp.com",
-            databaseURL: "https://smartclassroom-416bc-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "smartclassroom-416bc",
-            storageBucket: "smartclassroom-416bc.firebasestorage.app",
-            messagingSenderId: "586666640868",
-            appId: "1:586666640868:web:d70c71daee4c05367333f1",
-            measurementId: "G-XF0XFKXXZ7"
-        };
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+      import {
+        getDatabase,
+        ref,
+        onValue,
+        off,
+      } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // Gemini API Configuration
-        const API_KEY = "AIzaSyBKP_scjOxgkw9po7Bs_n1z2-sQGe8Mrdc";
-        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+      // Firebase Configuration
+      const firebaseConfig = {
+        apiKey: "AIzaSyD_jg2mFvR0GIp7rcO5eusQkf06mYdbPGA",
+        authDomain: "smartclassroom-416bc.firebaseapp.com",
+        databaseURL:
+          "https://smartclassroom-416bc-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "smartclassroom-416bc",
+        storageBucket: "smartclassroom-416bc.firebasestorage.app",
+        messagingSenderId: "586666640868",
+        appId: "1:586666640868:web:d70c71daee4c05367333f1",
+        measurementId: "G-XF0XFKXXZ7",
+      };
 
-        const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
+      // Gemini API Configuration
+      const API_KEY = "AIzaSyBKP_scjOxgkw9po7Bs_n1z2-sQGe8Mrdc";
+      const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
 
-        let sensorData = {};
-        let isOnline = true;
-        let typingStopped = false;
-        let weatherData = null;
-        let isInactive = false;
+      const app = initializeApp(firebaseConfig);
+      const database = getDatabase(app);
 
-        const sensorConfig = {
-            temperature: {
-                title: 'Suhu',
-                icon: 'fas fa-thermometer-half',
-                unit: '°C',
-                color: '#ef4444',
-                getStatus: (value) => {
-                    if (value < 20 || value > 35) return 'danger';
-                    if (value < 22 || value > 32) return 'warning';
-                    return 'normal';
-                }
-            },
-            humidity: {
-                title: 'Kelembaban',
-                icon: 'fas fa-tint',
-                unit: '%',
-                color: '#3b82f6',
-                getStatus: (value) => {
-                    if (value < 30 || value > 80) return 'danger';
-                    if (value < 40 || value > 70) return 'warning';
-                    return 'normal';
-                }
-            },
-            ldr: {
-                title: 'Sensor Cahaya (LDR)',
-                icon: 'fas fa-eye',
-                unit: '',
-                color: '#f59e0b',
-                getStatus: (value) => {
-                    if (value < 500) return 'danger';
-                    if (value < 1000) return 'warning';
-                    return 'normal';
-                }
-            },
-            gas: {
-                title: 'Sensor Gas',
-                icon: 'fas fa-smog',
-                unit: 'ppm',
-                color: '#10b981',
-                getStatus: (value) => {
-                    if (value > 2000) return 'danger';
-                    if (value > 1200) return 'warning';
-                    return 'normal';
-                }
-            },
-            gasDetected: {
-                title: 'Status Deteksi Gas',
-                icon: 'fas fa-exclamation-triangle',
-                unit: '',
-                color: '#dc2626',
-                getStatus: (value) => value ? 'danger' : 'normal',
-                formatValue: (value) => value ? '🚨 Gas Terdeteksi!' : 'Aman'
-            }
-        };
+      let sensorData = {};
+      let isOnline = true;
+      let typingStopped = false;
+      let weatherData = null;
+      let isInactive = false;
 
-        // Initialize dashboard
-        function initDashboard() {
-            renderSensorCards();
-            setupRealtimeListeners();
-            setupChatbot();
-            checkConnectionStatus();
-            fetchWeatherData();
-        }
+      const sensorConfig = {
+        temperature: {
+          title: "Suhu",
+          icon: "fas fa-thermometer-half",
+          unit: "°C",
+          color: "#ef4444",
+          getStatus: (value) => {
+            if (value < 20 || value > 35) return "danger";
+            if (value < 22 || value > 32) return "warning";
+            return "normal";
+          },
+        },
+        humidity: {
+          title: "Kelembaban",
+          icon: "fas fa-tint",
+          unit: "%",
+          color: "#3b82f6",
+          getStatus: (value) => {
+            if (value < 30 || value > 80) return "danger";
+            if (value < 40 || value > 70) return "warning";
+            return "normal";
+          },
+        },
+        ldr: {
+          title: "intensitas Cahaya (LDR)",
+          icon: "fas fa-eye",
+          unit: "",
+          color: "#f59e0b",
+          getStatus: (value) => {
+            if (value < 500) return "danger";
+            if (value < 1000) return "warning";
+            return "normal";
+          },
+        },
+        gas: {
+          title: "Gas(CO2/CO/NH3)",
+          icon: "fas fa-smog",
+          unit: "ppm",
+          color: "#10b981",
+          getStatus: (value) => {
+            if (value > 2000) return "danger";
+            if (value > 1200) return "warning";
+            return "normal";
+          },
+        },
+        gasDetected: {
+          title: "Status Deteksi Gas",
+          icon: "fas fa-exclamation-triangle",
+          unit: "",
+          color: "#dc2626",
+          getStatus: (value) => (value ? "danger" : "normal"),
+          formatValue: (value) => (value ? "🚨 Gas Terdeteksi!" : "Aman"),
+        },
+      };
 
-        // Render sensor cards
-        function renderSensorCards() {
-            const sensorGrid = document.getElementById('sensorGrid');
-            sensorGrid.innerHTML = '';
+      // Initialize dashboard
+      function initDashboard() {
+        renderSensorCards();
+        setupRealtimeListeners();
+        setupChatbot();
+        checkConnectionStatus();
+        fetchWeatherData();
+      }
 
-            Object.keys(sensorConfig).forEach(sensorKey => {
-                const config = sensorConfig[sensorKey];
-                const card = createSensorCard(sensorKey, config);
-                sensorGrid.appendChild(card);
-            });
-        }
+      // Render sensor cards
+      function renderSensorCards() {
+        const sensorGrid = document.getElementById("sensorGrid");
+        sensorGrid.innerHTML = "";
 
-        // Create sensor card element
-        function createSensorCard(sensorKey, config) {
-            const card = document.createElement('div');
-            card.className = 'sensor-card';
-            card.id = `sensor-${sensorKey}`;
-            
-            const value = sensorData[sensorKey] || 0;
-            const displayValue = config.formatValue ? config.formatValue(value) : value.toFixed(1);
-            const status = config.getStatus(value);
-            const statusText = getStatusText(status);
+        Object.keys(sensorConfig).forEach((sensorKey) => {
+          const config = sensorConfig[sensorKey];
+          const card = createSensorCard(sensorKey, config);
+          sensorGrid.appendChild(card);
+        });
+      }
 
-            card.innerHTML = `
+      // Create sensor card element
+      function createSensorCard(sensorKey, config) {
+        const card = document.createElement("div");
+        card.className = "sensor-card";
+        card.id = `sensor-${sensorKey}`;
+
+        const value = sensorData[sensorKey] || 0;
+        const displayValue = config.formatValue
+          ? config.formatValue(value)
+          : value.toFixed(1);
+        const status = config.getStatus(value);
+        const statusText = getStatusText(status);
+
+        card.innerHTML = `
                 <div class="sensor-header">
                     <div>
                         <div class="sensor-icon" style="background: ${config.color}">
@@ -225,408 +316,468 @@
                 </div>
             `;
 
-            return card;
-        }
+        return card;
+      }
 
-        // Get status text
-        function getStatusText(status) {
-            switch(status) {
-                case 'normal': return 'Normal';
-                case 'warning': return 'Perhatian';
-                case 'danger': return 'Peringatan';
-                default: return '❓ Unknown';
+      // Get status text
+      function getStatusText(status) {
+        switch (status) {
+          case "normal":
+            return "Normal";
+          case "warning":
+            return "Perhatian";
+          case "danger":
+            return "Peringatan";
+          default:
+            return "❓ Unknown";
+        }
+      }
+
+      // Setup real-time listeners
+      function setupRealtimeListeners() {
+        const sensorDataRef = ref(database, "sensorData");
+
+        onValue(
+          sensorDataRef,
+          (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+              Object.keys(sensorConfig).forEach((sensorKey) => {
+                if (data.hasOwnProperty(sensorKey)) {
+                  sensorData[sensorKey] = data[sensorKey];
+                  // Ambil timestamp spesifik jika ada, fallback ke data.timestamp
+                  let sensorTimestamp = null;
+                  if (sensorKey === "temperature") {
+                    sensorTimestamp =
+                      data.temperatureTimestamp || data.timestamp || Date.now();
+                    // Konversi ke milidetik jika string
+                    if (
+                      typeof sensorTimestamp === "string" &&
+                      !/^[0-9]+$/.test(sensorTimestamp)
+                    ) {
+                      sensorTimestamp = new Date(sensorTimestamp).getTime();
+                    } else {
+                      sensorTimestamp = Number(sensorTimestamp);
+                    }
+                    sensorData.temperatureTimestamp = sensorTimestamp;
+                  } else {
+                    sensorTimestamp =
+                      data[`${sensorKey}Timestamp`] ||
+                      data.timestamp ||
+                      Date.now();
+                    if (
+                      typeof sensorTimestamp === "string" &&
+                      !/^[0-9]+$/.test(sensorTimestamp)
+                    ) {
+                      sensorTimestamp = new Date(sensorTimestamp).getTime();
+                    } else {
+                      sensorTimestamp = Number(sensorTimestamp);
+                    }
+                  }
+                  updateSensorCard(sensorKey, {
+                    value: data[sensorKey],
+                    timestamp: sensorTimestamp,
+                  });
+                }
+              });
+              checkTemperatureSensorActive();
+            } else {
+              checkTemperatureSensorActive();
             }
+          },
+          (error) => {
+            console.error("Error listening to sensorData:", error);
+            setOfflineStatus(true);
+          }
+        );
+
+        // Listen for connection status
+        const connectedRef = ref(database, ".info/connected");
+        onValue(connectedRef, (snapshot) => {
+          setOfflineStatus(!snapshot.val());
+        });
+      }
+
+      // Update sensor card
+      function updateSensorCard(sensorKey, data) {
+        const config = sensorConfig[sensorKey];
+        const value = data.value || 0;
+        const displayValue = config.formatValue
+          ? config.formatValue(value)
+          : value.toFixed(1);
+        const status = config.getStatus(value);
+        const statusText = getStatusText(status);
+
+        document.getElementById(`value-${sensorKey}`).textContent =
+          displayValue;
+        document.getElementById(`timestamp-${sensorKey}`).textContent =
+          new Date(data.timestamp || Date.now()).toLocaleTimeString("id-ID");
+
+        const statusElement = document.getElementById(`status-${sensorKey}`);
+        statusElement.className = `sensor-status status-${status}`;
+        statusElement.textContent = statusText;
+
+        // Add animation effect😎
+        const card = document.getElementById(`sensor-${sensorKey}`);
+        card.style.transform = "scale(1.02)";
+        setTimeout(() => {
+          card.style.transform = "scale(1)";
+        }, 200);
+      }
+
+      function setOfflineStatus(offline) {
+        isOnline = !offline;
+        const indicator = document.getElementById("offlineIndicator");
+        indicator.style.display = offline ? "block" : "none";
+      }
+
+      function checkConnectionStatus() {
+        setInterval(() => {
+          if (!navigator.onLine) {
+            setOfflineStatus(true);
+          }
+        }, 5000);
+      }
+
+      // Setup chatbot
+      function setupChatbot() {
+        const chatInput = document.getElementById("chatInput");
+        const sendButton = document.getElementById("sendButton");
+        const stopButton = document.getElementById("stopButton");
+
+        sendButton.addEventListener("click", sendMessage);
+        chatInput.addEventListener("keypress", (e) => {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+          }
+        });
+        stopButton.addEventListener("click", stopMessage);
+      }
+
+      // Send message to chatbot
+      async function sendMessage() {
+        const chatInput = document.getElementById("chatInput");
+        const message = chatInput.value.trim();
+        if (!message) return;
+        addMessageToChat(message, "user");
+        chatInput.value = "";
+        showLoading(true);
+        try {
+          const context = prepareContext();
+          const response = await callGeminiAPI(message, context);
+          const cleaned = cleanAIBullets(response);
+          addTypingMessageToChat(cleaned);
+        } catch (error) {
+          console.error("Error calling Gemini API:", error);
+          addMessageToChat(
+            "Maaf, terjadi kesalahan. Silakan coba lagi nanti.",
+            "bot"
+          );
+        } finally {
+          showLoading(false);
         }
+      }
 
-        // Setup real-time listeners
-        function setupRealtimeListeners() {
-            const sensorDataRef = ref(database, 'sensorData');
-            
-            onValue(sensorDataRef, (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    Object.keys(sensorConfig).forEach(sensorKey => {
-                        if (data.hasOwnProperty(sensorKey)) {
-                            sensorData[sensorKey] = data[sensorKey];
-                            // Ambil timestamp spesifik jika ada, fallback ke data.timestamp
-                            let sensorTimestamp = null;
-                            if (sensorKey === 'temperature') {
-                                sensorTimestamp = data.temperatureTimestamp || data.timestamp || Date.now();
-                                // Konversi ke milidetik jika string
-                                if (typeof sensorTimestamp === 'string' && !/^[0-9]+$/.test(sensorTimestamp)) {
-                                    sensorTimestamp = new Date(sensorTimestamp).getTime();
-                                } else {
-                                    sensorTimestamp = Number(sensorTimestamp);
-                                }
-                                sensorData.temperatureTimestamp = sensorTimestamp;
-                            } else {
-                                sensorTimestamp = data[`${sensorKey}Timestamp`] || data.timestamp || Date.now();
-                                if (typeof sensorTimestamp === 'string' && !/^[0-9]+$/.test(sensorTimestamp)) {
-                                    sensorTimestamp = new Date(sensorTimestamp).getTime();
-                                } else {
-                                    sensorTimestamp = Number(sensorTimestamp);
-                                }
-                            }
-                            updateSensorCard(sensorKey, {
-                                value: data[sensorKey],
-                                timestamp: sensorTimestamp
-                            });
-                        }
-                    });
-                    checkTemperatureSensorActive();
-                } else {
-                    checkTemperatureSensorActive();
-                }
-            }, (error) => {
-                console.error('Error listening to sensorData:', error);
-                setOfflineStatus(true);
-            });
+      function stopMessage() {
+        typingStopped = true;
+      }
 
-            // Listen for connection status
-            const connectedRef = ref(database, '.info/connected');
-            onValue(connectedRef, (snapshot) => {
-                setOfflineStatus(!snapshot.val());
-            });
-        }
+      function addMessageToChat(message, sender) {
+        const chatMessages = document.getElementById("chatMessages");
+        const messageDiv = document.createElement("div");
+        messageDiv.className = `message ${sender}`;
 
-        // Update sensor card
-        function updateSensorCard(sensorKey, data) {
-            const config = sensorConfig[sensorKey];
-            const value = data.value || 0;
-            const displayValue = config.formatValue ? config.formatValue(value) : value.toFixed(1);
-            const status = config.getStatus(value);
-            const statusText = getStatusText(status);
-
-            document.getElementById(`value-${sensorKey}`).textContent = displayValue;
-            document.getElementById(`timestamp-${sensorKey}`).textContent = 
-                new Date(data.timestamp || Date.now()).toLocaleTimeString('id-ID');
-            
-            const statusElement = document.getElementById(`status-${sensorKey}`);
-            statusElement.className = `sensor-status status-${status}`;
-            statusElement.textContent = statusText;
-
-            // Add animation effect😎
-            const card = document.getElementById(`sensor-${sensorKey}`);
-            card.style.transform = 'scale(1.02)';
-            setTimeout(() => {
-                card.style.transform = 'scale(1)';
-            }, 200);
-        }
-
-        function setOfflineStatus(offline) {
-            isOnline = !offline;
-            const indicator = document.getElementById('offlineIndicator');
-            indicator.style.display = offline ? 'block' : 'none';
-        }
-
-        function checkConnectionStatus() {
-            setInterval(() => {
-                if (!navigator.onLine) {
-                    setOfflineStatus(true);
-                }
-            }, 5000);
-        }
-
-        // Setup chatbot
-        function setupChatbot() {
-            const chatInput = document.getElementById('chatInput');
-            const sendButton = document.getElementById('sendButton');
-            const stopButton = document.getElementById('stopButton');
-
-            sendButton.addEventListener('click', sendMessage);
-            chatInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    sendMessage();
-                }
-            });
-            stopButton.addEventListener('click', stopMessage);
-        }
-
-        // Send message to chatbot
-        async function sendMessage() {
-            const chatInput = document.getElementById('chatInput');
-            const message = chatInput.value.trim();
-            if (!message) return;
-            addMessageToChat(message, 'user');
-            chatInput.value = '';
-            showLoading(true);
-            try {
-                const context = prepareContext();
-                const response = await callGeminiAPI(message, context);
-                const cleaned = cleanAIBullets(response);
-                addTypingMessageToChat(cleaned);
-            } catch (error) {
-                console.error('Error calling Gemini API:', error);
-                addMessageToChat('Maaf, terjadi kesalahan. Silakan coba lagi nanti.', 'bot');
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        function stopMessage() {
-            typingStopped = true;
-        }
-
-        function addMessageToChat(message, sender) {
-            const chatMessages = document.getElementById('chatMessages');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${sender}`;
-
-            const avatar = sender === 'user' ? '<i class="fas fa-user"></i>' : '<i class="fas fa-robot"></i>';
-            messageDiv.innerHTML = `
+        const avatar =
+          sender === "user"
+            ? '<i class="fas fa-user"></i>'
+            : '<i class="fas fa-robot"></i>';
+        messageDiv.innerHTML = `
                 <div class="message-avatar">${avatar}</div>
                 <div class="message-content">${message}</div>
             `;
 
-            chatMessages.appendChild(messageDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
 
-        function showLoading(show) {
-            const loadingIndicator = document.getElementById('loadingIndicator');
-            loadingIndicator.style.display = show ? 'block' : 'none';
-        }
+      function showLoading(show) {
+        const loadingIndicator = document.getElementById("loadingIndicator");
+        loadingIndicator.style.display = show ? "block" : "none";
+      }
 
-        function addTypingMessageToChat(message) {
-            typingStopped = false;
-            const chatMessages = document.getElementById('chatMessages');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'message bot';
-            messageDiv.innerHTML = `
+      function addTypingMessageToChat(message) {
+        typingStopped = false;
+        const chatMessages = document.getElementById("chatMessages");
+        const messageDiv = document.createElement("div");
+        messageDiv.className = "message bot";
+        messageDiv.innerHTML = `
                 <div class="message-avatar"><i class="fas fa-robot"></i></div>
                 <div class="message-content" id="typingContent"></div>
             `;
-            chatMessages.appendChild(messageDiv);
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        const typingContent = messageDiv.querySelector("#typingContent");
+        let i = 0;
+        function typeChar() {
+          if (typingStopped) return;
+          if (i < message.length) {
+            typingContent.textContent += message.charAt(i);
+            i++;
             chatMessages.scrollTop = chatMessages.scrollHeight;
+            setTimeout(typeChar, Math.random() * 40 + 20);
+          }
+        }
+        typeChar();
+      }
 
-            const typingContent = messageDiv.querySelector('#typingContent');
-            let i = 0;
-            function typeChar() {
-                if (typingStopped) return;
-                if (i < message.length) {
-                    typingContent.textContent += message.charAt(i);
-                    i++;
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
-                    setTimeout(typeChar, Math.random() * 40 + 20);
-                }
-            }
-            typeChar();
+      // Prepare sensor context untuk AI
+      function prepareContext() {
+        const currentTime = new Date().toLocaleString("id-ID");
+        let context = `Menurut Data sensor saat ini (${currentTime}):\n`;
+        if (sensorData.temperature) {
+          let tempInfo = `- Suhu: ${sensorData.temperature}°C`;
+          if (sensorData.temperatureTimestamp) {
+            const lastUpdate = new Date(
+              typeof sensorData.temperatureTimestamp === "string"
+                ? parseInt(sensorData.temperatureTimestamp)
+                : sensorData.temperatureTimestamp
+            );
+            const now = new Date();
+            const diffMs = now - lastUpdate;
+            const diffMin = Math.floor(diffMs / 60000);
+            tempInfo += ` (update ${diffMin} menit yang lalu)`;
+          }
+          context += tempInfo + "\n";
+        }
+        if (sensorData.humidity) {
+          context += `- Kelembaban: ${sensorData.humidity}%\n`;
+        }
+        if (sensorData.ldr) {
+          const lightLevel =
+            sensorData.ldr < 500
+              ? "Gelap"
+              : sensorData.ldr < 1500
+              ? "Redup"
+              : sensorData.ldr < 2500
+              ? "Terang"
+              : "Sangat Terang";
+          context += `- Cahaya (LDR): ${sensorData.ldr} (${lightLevel})\n`;
+        }
+        if (sensorData.gas) {
+          context += `- Gas: ${sensorData.gas} ppm\n`;
+        }
+        if (sensorData.gasDetected !== undefined) {
+          context += `- Status Gas: ${
+            sensorData.gasDetected ? "Terdeteksi Bahaya!" : "Aman"
+          }\n`;
         }
 
-        // Prepare sensor context untuk AI
-        function prepareContext() {
-            const currentTime = new Date().toLocaleString('id-ID');
-            let context = `Data sensor kualitas kandang saat ini (${currentTime}):\n`;
-            if (sensorData.temperature) {
-                let tempInfo = `- Suhu: ${sensorData.temperature}°C`;
-                if (sensorData.temperatureTimestamp) {
-                    const lastUpdate = new Date(
-                        typeof sensorData.temperatureTimestamp === 'string' ? parseInt(sensorData.temperatureTimestamp) : sensorData.temperatureTimestamp
-                    );
-                    const now = new Date();
-                    const diffMs = now - lastUpdate;
-                    const diffMin = Math.floor(diffMs / 60000);
-                    tempInfo += ` (update ${diffMin} menit yang lalu)`;
-                }
-                context += tempInfo + '\n';
-            }
-            if (sensorData.humidity) {
-                context += `- Kelembaban: ${sensorData.humidity}%\n`;
-            }
-            if (sensorData.ldr) {
-                const lightLevel = sensorData.ldr < 500 ? 'Gelap' : 
-                                 sensorData.ldr < 1500 ? 'Redup' : 
-                                 sensorData.ldr < 2500 ? 'Terang' : 'Sangat Terang';
-                context += `- Cahaya (LDR): ${sensorData.ldr} (${lightLevel})\n`;
-            }
-            if (sensorData.gas) {
-                context += `- Gas: ${sensorData.gas} ppm\n`;
-            }
-            if (sensorData.gasDetected !== undefined) {
-                context += `- Status Gas: ${sensorData.gasDetected ? 'Terdeteksi Bahaya!' : 'Aman'}\n`;
-            }
-
-            if (isInactive) {
-                context += `\nPeringatan: Sensor  tidak aktif atau tidak ada data terbaru!\n`;
-            }
-      
-            if (weatherData) {
-                context += `\nData cuaca di sekitar kota Cirebon saat ini (${weatherData.time}):\n`;
-                context += `- Suhu udara: ${weatherData.temp_c}°C\n`;
-                context += `- Suhu terasa: ${weatherData.feelslike_c}°C\n`;
-                context += `- Kelembaban: ${weatherData.humidity}%\n`;
-                context += `- Cuaca: ${weatherData.condition}\n`;
-                if (weatherData.pm2_5 !== null) context += `- PM2.5: ${weatherData.pm2_5}\n`;
-            } else {
-                context += `\nData cuaca kota Cirebon tidak tersedia saat ini.\n`;
-            }
-            context += `\nAnda adalah asisten IoTernak yang membantu monitoring peternakan ayam.Anda bisa:
-1. Memberikan informasi tentang kondisi sensor
-2. Memberikan saran berdasarkan data sensor dan Berikan respons yang informatif dan membantu dalam bahasa Indonesia.\n\n`;
-            return context;
+        if (isInactive) {
+          context += `\nPeringatan: Sensor  tidak aktif atau tidak ada data terbaru!\n`;
         }
 
-        // Call Gemini API
-        async function callGeminiAPI(message, context) {
-            const requestBody = {
-                contents: [
-                    {
-                        parts: [
-                            {
-                                text: `${context}\n\nPertanyaan pengguna: ${message}`
-                            }
-                        ]
-                    }
-                ],
-                generationConfig: {
-                    temperature: 0.7,
-                    topK: 40,
-                    topP: 0.95,
-                    maxOutputTokens: 1024,
-                }
-            };
+        if (weatherData) {
+          context += `\nData cuaca di sekitar kota Cirebon saat ini (${weatherData.time}):\n`;
+          context += `- Suhu udara: ${weatherData.temp_c}°C\n`;
+          context += `- Suhu terasa: ${weatherData.feelslike_c}°C\n`;
+          context += `- Kelembaban: ${weatherData.humidity}%\n`;
+          context += `- Cuaca: ${weatherData.condition}\n`;
+          if (weatherData.pm2_5 !== null)
+            context += `- PM2.5: ${weatherData.pm2_5}\n`;
+        } else {
+          context += `\nData cuaca kota Cirebon tidak tersedia saat ini.\n`;
+        }
+        context += `\nAnda adalah AI assistant yang cerdas dan ramah untuk sistem Smart Classroom. Tugas Anda adalah memantau dan memberikan informasi berdasarkan data sensor di dalam ruangan, seperti suhu, kelembapan, cahaya (LDR), gas, arus listrik (bila ada), serta informasi cuaca dari sekitar lokasi (misalnya kota Cirebon) berdasarkan data dari layanan weather.
+        Jika pengguna sedang menyapa, berpamitan, bercanda, atau memberikan tanggapan sosial lainnya, tanggapi dengan cara yang sesuai secara sosial, bukan membahas data sensor.
+Berikan jawaban dalam bahasa Indonesia yang mudah dipahami, tidak kaku, dan interaktif layaknya percakapan manusia. Sampaikan analisis kondisi ruangan berdasarkan data sensor yang tersedia, dan berikan saran jika ada kondisi yang perlu perhatian (misalnya suhu terlalu tinggi, kualitas udara buruk, pencahayaan terlalu redup, dll).
+Jika data cuaca tersedia, gabungkan dengan analisis Anda untuk memberikan konteks lingkungan yang lebih lengkap (misalnya: “Udara di luar sedang panas, dan suhu dalam ruangan juga tinggi. Disarankan menyalakan pendingin”).
+Jika pengguna tidak bertanya langsung soal data, atau sedang menyapa, berpamitan, bercanda, atau memberikan tanggapan sosial/pemahaman lainnya berikan respons ramah dan tanggapi dengan cara yang sesuai secara pemahaman anda, bukan membahas data sensor..
+\n\n`;
+        return context;
+      }
 
-            const response = await fetch(API_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
+      // Call Gemini API
+      async function callGeminiAPI(message, context) {
+        const requestBody = {
+          contents: [
+            {
+              parts: [
+                {
+                  text: `${context}\n\nPertanyaan pengguna: ${message}`,
                 },
-                body: JSON.stringify(requestBody)
-            });
+              ],
+            },
+          ],
+          generationConfig: {
+            temperature: 0.7,
+            topK: 40,
+            topP: 0.95,
+            maxOutputTokens: 1024,
+          },
+        };
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const data = await response.json();
-            return data.candidates[0].content.parts[0].text;
-        }
-
-        function cleanAIBullets(text) {
-            return text
-                .replace(/^\s*\*+\s?/gm, '')   
-                .replace(/^\s*-\s?/gm, '')      
-                .replace(/\*\*/g, '');          
-        }
-
-        // WeatherAPI: fetch and display Cirebon weather
-        async function fetchWeatherData() {
-            const API_URL = 'https://api.weatherapi.com/v1/current.json?key=c05e367e368a4fb9a1113435250607&q=Cirebon&aqi=yes';
-            const iconEl = document.getElementById('weatherIcon');
-            const descEl = document.getElementById('weatherDesc');
-            const tempEl = document.getElementById('weatherTemp');
-            const feelsEl = document.getElementById('weatherFeels');
-            const humEl = document.getElementById('weatherHumidity');
-            const pmEl = document.getElementById('weatherPM');
-            const timeEl = document.getElementById('weatherTime');
-
-            descEl.textContent = 'Memuat data cuaca...';
-            iconEl.style.display = 'none';
-            tempEl.textContent = feelsEl.textContent = humEl.textContent = pmEl.textContent = timeEl.textContent = '-';
-            weatherData = null;
-
-            try {
-                const response = await fetch(API_URL);
-                if (!response.ok) throw new Error('Gagal mengambil data cuaca');
-                const data = await response.json();
-                const c = data.current;
-                tempEl.textContent = c.temp_c;
-                feelsEl.textContent = c.feelslike_c;
-                humEl.textContent = c.humidity;
-                pmEl.textContent = c.air_quality && c.air_quality.pm2_5 !== undefined ? c.air_quality.pm2_5.toFixed(1) : '-';
-                descEl.textContent = c.condition.text;
-                timeEl.textContent = data.location.localtime;
-                if (c.condition.icon) {
-                    iconEl.src = c.condition.icon.startsWith('http') ? c.condition.icon : 'https:' + c.condition.icon;
-                    iconEl.alt = c.condition.text;
-                    iconEl.style.display = 'inline-block';
-                }
-
-                weatherData = {
-                    temp_c: c.temp_c,
-                    feelslike_c: c.feelslike_c,
-                    humidity: c.humidity,
-                    condition: c.condition.text,
-                    icon: c.condition.icon,
-                    pm2_5: c.air_quality && c.air_quality.pm2_5 !== undefined ? c.air_quality.pm2_5 : null,
-                    time: data.location.localtime
-                };
-            } catch (err) {
-                descEl.textContent = 'Gagal memuat data cuaca';
-                iconEl.style.display = 'none';
-                weatherData = null;
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            initDashboard();
-            fetchWeatherData();
-            setInterval(fetchWeatherData, 5 * 60 * 1000); 
+        const response = await fetch(API_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestBody),
         });
 
-        // Weather section expand/collapse
-        const weatherHeader = document.getElementById('weatherHeader');
-        const weatherInfo = document.getElementById('weatherInfo');
-        const weatherExpandIcon = document.getElementById('weatherExpandIcon');
-
-        weatherHeader.addEventListener('click', () => {
-            const isExpanded = weatherInfo.style.maxHeight && weatherInfo.style.maxHeight !== '0px';
-            weatherInfo.style.maxHeight = isExpanded ? '0' : weatherInfo.scrollHeight + 'px';
-            weatherExpandIcon.style.transform = isExpanded ? 'rotate(0deg)' : 'rotate(180deg)';
-        });
-
-        let weatherExpanded = false;
-        const weatherSection = document.getElementById('weatherSection');
-
-        function setWeatherExpanded(expand) {
-            weatherExpanded = expand;
-            if (expand) {
-                weatherInfo.style.maxHeight = '200px'; 
-                weatherExpandIcon.style.transform = 'rotate(180deg)';
-            } else {
-                weatherInfo.style.maxHeight = '0';
-                weatherExpandIcon.style.transform = 'rotate(0deg)';
-            }
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        weatherSection.addEventListener('click', () => {
-            setWeatherExpanded(!weatherExpanded);
-        });
+        const data = await response.json();
+        return data.candidates[0].content.parts[0].text;
+      }
 
-        setWeatherExpanded(false);
-        
-        // --- Notifikasi sensor mati jika gas/humidity tidak update 30 detik ---
-let lastGas = null, lastGasUpdate = 0;
-let lastHumidity = null, lastHumidityUpdate = 0;
+      function cleanAIBullets(text) {
+        return text
+          .replace(/^\s*\*+\s?/gm, "")
+          .replace(/^\s*-\s?/gm, "")
+          .replace(/\*\*/g, "");
+      }
 
+      // WeatherAPI: fetch and display Cirebon weather
+      async function fetchWeatherData() {
+        const API_URL =
+          "https://api.weatherapi.com/v1/current.json?key=c05e367e368a4fb9a1113435250607&q=Cirebon&aqi=yes";
+        const iconEl = document.getElementById("weatherIcon");
+        const descEl = document.getElementById("weatherDesc");
+        const tempEl = document.getElementById("weatherTemp");
+        const feelsEl = document.getElementById("weatherFeels");
+        const humEl = document.getElementById("weatherHumidity");
+        const pmEl = document.getElementById("weatherPM");
+        const timeEl = document.getElementById("weatherTime");
 
-function checkTemperatureSensorActive() {
-    const notif = document.getElementById('notifTempInactive');
-    const now = Date.now();
-    const gas = sensorData.gas;
-    const humidity = sensorData.humidity;
+        descEl.textContent = "Memuat data cuaca...";
+        iconEl.style.display = "none";
+        tempEl.textContent =
+          feelsEl.textContent =
+          humEl.textContent =
+          pmEl.textContent =
+          timeEl.textContent =
+            "-";
+        weatherData = null;
 
-    // Cek perubahan nilai gas
-    if (gas !== undefined && gas !== null && !isNaN(gas)) {
-        if (lastGas !== gas) {
+        try {
+          const response = await fetch(API_URL);
+          if (!response.ok) throw new Error("Gagal mengambil data cuaca");
+          const data = await response.json();
+          const c = data.current;
+          tempEl.textContent = c.temp_c;
+          feelsEl.textContent = c.feelslike_c;
+          humEl.textContent = c.humidity;
+          pmEl.textContent =
+            c.air_quality && c.air_quality.pm2_5 !== undefined
+              ? c.air_quality.pm2_5.toFixed(1)
+              : "-";
+          descEl.textContent = c.condition.text;
+          timeEl.textContent = data.location.localtime;
+          if (c.condition.icon) {
+            iconEl.src = c.condition.icon.startsWith("http")
+              ? c.condition.icon
+              : "https:" + c.condition.icon;
+            iconEl.alt = c.condition.text;
+            iconEl.style.display = "inline-block";
+          }
+
+          weatherData = {
+            temp_c: c.temp_c,
+            feelslike_c: c.feelslike_c,
+            humidity: c.humidity,
+            condition: c.condition.text,
+            icon: c.condition.icon,
+            pm2_5:
+              c.air_quality && c.air_quality.pm2_5 !== undefined
+                ? c.air_quality.pm2_5
+                : null,
+            time: data.location.localtime,
+          };
+        } catch (err) {
+          descEl.textContent = "Gagal memuat data cuaca";
+          iconEl.style.display = "none";
+          weatherData = null;
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        initDashboard();
+        fetchWeatherData();
+        setInterval(fetchWeatherData, 5 * 60 * 1000);
+      });
+
+      // Weather section expand/collapse
+      const weatherHeader = document.getElementById("weatherHeader");
+      const weatherInfo = document.getElementById("weatherInfo");
+      const weatherExpandIcon = document.getElementById("weatherExpandIcon");
+
+      weatherHeader.addEventListener("click", () => {
+        const isExpanded =
+          weatherInfo.style.maxHeight && weatherInfo.style.maxHeight !== "0px";
+        weatherInfo.style.maxHeight = isExpanded
+          ? "0"
+          : weatherInfo.scrollHeight + "px";
+        weatherExpandIcon.style.transform = isExpanded
+          ? "rotate(0deg)"
+          : "rotate(180deg)";
+      });
+
+      let weatherExpanded = false;
+      const weatherSection = document.getElementById("weatherSection");
+
+      function setWeatherExpanded(expand) {
+        weatherExpanded = expand;
+        if (expand) {
+          weatherInfo.style.maxHeight = "200px";
+          weatherExpandIcon.style.transform = "rotate(180deg)";
+        } else {
+          weatherInfo.style.maxHeight = "0";
+          weatherExpandIcon.style.transform = "rotate(0deg)";
+        }
+      }
+
+      weatherSection.addEventListener("click", () => {
+        setWeatherExpanded(!weatherExpanded);
+      });
+
+      setWeatherExpanded(false);
+
+      // --- Notifikasi sensor mati jika gas/humidity tidak update 30 detik ---
+      let lastGas = null,
+        lastGasUpdate = 0;
+      let lastHumidity = null,
+        lastHumidityUpdate = 0;
+
+      function checkTemperatureSensorActive() {
+        const notif = document.getElementById("notifTempInactive");
+        const now = Date.now();
+        const gas = sensorData.gas;
+        const humidity = sensorData.humidity;
+
+        // Cek perubahan nilai gas
+        if (gas !== undefined && gas !== null && !isNaN(gas)) {
+          if (lastGas !== gas) {
             lastGas = gas;
             lastGasUpdate = now;
+          }
         }
-    }
-    // Cek perubahan nilai humidity
-    if (humidity !== undefined && humidity !== null && !isNaN(humidity)) {
-        if (lastHumidity !== humidity) {
+        // Cek perubahan nilai humidity
+        if (humidity !== undefined && humidity !== null && !isNaN(humidity)) {
+          if (lastHumidity !== humidity) {
             lastHumidity = humidity;
             lastHumidityUpdate = now;
+          }
         }
-    }
-    // Jika kedua nilai tidak update selama 30 detik, anggap sensor mati
-    const gasStale = now - lastGasUpdate > 30000;
-    const humidityStale = now - lastHumidityUpdate > 30000;
-    const isInactive = gasStale && humidityStale;
-    notif.style.display = isInactive ? 'flex' : 'none';
-}
+        // Jika kedua nilai tidak update selama 30 detik, anggap sensor mati
+        const gasStale = now - lastGasUpdate > 30000;
+        const humidityStale = now - lastHumidityUpdate > 30000;
+        const isInactive = gasStale && humidityStale;
+        notif.style.display = isInactive ? "flex" : "none";
+      }
     </script>
-</body>
+  </body>
 </html>

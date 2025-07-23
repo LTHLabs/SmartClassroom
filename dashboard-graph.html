@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IoTernak - Monitoring & Grafik</title>
+    <title>Classroom - Monitoring & Grafik</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
@@ -19,7 +19,7 @@
     <div class="row">
         <div class="col-lg-6 col-12">
             <div class="chart-container">
-                <h5 class="mb-3">Sensor Kandang (Real-time)</h5>
+                <h5 class="mb-3">Sensor Ruangan (Real-time)</h5>
                 <div id="chartRoom" style="height:320px;"></div>
             </div>
         </div>
@@ -120,8 +120,8 @@ let roomOption = {
     xAxis: { type: 'category', data: [] },
     yAxis: { type: 'value' },
     series: [
-        { name: 'Suhu Ruangan (°C)', type: 'line', data: [], smooth: true, color: '#3b82f6' },
-        { name: 'Kelembaban Ruangan (%)', type: 'line', data: [], smooth: true, color: '#ef4444' },
+        { name: 'Suhu (°C)', type: 'line', data: [], smooth: true, color: '#3b82f6' },
+        { name: 'Kelembaban (%)', type: 'line', data: [], smooth: true, color: '#ef4444' },
         { name: 'Cahaya (Lux)', type: 'line', data: [], smooth: true, color: '#facc15' },
         { name: 'Gas (ppm)', type: 'line', data: [], smooth: true, color: '#64748b' }
     ]
