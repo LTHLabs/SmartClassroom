@@ -238,6 +238,7 @@ function cleanDatasetFromLocalStorage() {
     const cleanData = oldData.filter(isValidData);
     localStorage.setItem('smartclassroom_dataset', JSON.stringify(cleanData));
     dataset = cleanData;
+
 }
 
 function saveCurrentData() {
