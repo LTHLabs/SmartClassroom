@@ -1,4 +1,4 @@
-# Alexa for Classroom: Otomatisasi Pencahayaan Berbasis AI & IoT
+# Sistem Smart Classroom Berbasis IoT dan Asisten AI: Otomatisasi Pencahayaan dan Pemantauan Ruangan kelas
 
 🧠 **Tujuan Ringkas**  
 Mengembangkan sistem pencahayaan otomatis di dalam ruang kelas berbasis sensor intensitas cahaya (LDR), dengan kontrol menggunakan mikrokontroler ESP32 dan dimming lampu via MOSFET. Sistem ini menjadi bagian awal dari konsep smart classroom yang akan diperluas dengan asisten AI dan komponen pendukung lainnya.
