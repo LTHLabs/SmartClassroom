@@ -167,6 +167,14 @@
             >
               <i class="fas fa-stop"></i> Stop
             </button>
+            <button
+              class="btn btn-success"
+              id="voiceButton"
+              type="button"
+              style="margin-left: 8px"
+            >
+              <i class="fas fa-microphone" id="voiceIcon"></i> Voice
+            </button>
           </div>
         </div>
       </div>
@@ -207,6 +215,10 @@
       let typingStopped = false;
       let weatherData = null;
       let isInactive = false;
+      let recognition = null;
+      let isListening = false;
+      let speechSynthesis = window.speechSynthesis;
+      let voiceMode = false;
 
       const sensorConfig = {
         temperature: {
@@ -455,6 +467,172 @@
         stopButton.addEventListener("click", stopMessage);
       }
 
+      function initVoiceFeatures() {
+        // Cek dukungan Web Speech API
+        if (
+          !("webkitSpeechRecognition" in window) &&
+          !("SpeechRecognition" in window)
+        ) {
+          console.warn("Browser tidak mendukung Speech Recognition");
+          document.getElementById("voiceButton").style.display = "none";
+          return;
+        }
+
+        // Setup Speech Recognition
+        const SpeechRecognition =
+          window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognition();
+        recognition.lang = "id-ID";
+        recognition.continuous = false;
+        recognition.interimResults = false;
+
+        const voiceButton = document.getElementById("voiceButton");
+        const voiceIcon = document.getElementById("voiceIcon");
+        const chatInput = document.getElementById("chatInput");
+
+        // Event listener untuk tombol voice
+        voiceButton.addEventListener("click", toggleVoiceRecognition);
+
+        // Event handlers untuk speech recognition
+        recognition.onstart = function () {
+          isListening = true;
+          voiceButton.classList.remove("btn-success");
+          voiceButton.classList.add("btn-danger");
+          voiceIcon.className = "fas fa-stop";
+          chatInput.placeholder =
+            "🎤 Sedang mendengarkan... Klik stop untuk berhenti";
+        };
+
+        recognition.onresult = function (event) {
+          const transcript = event.results[0][0].transcript;
+          chatInput.value = transcript;
+          chatInput.focus();
+
+          // Set voice mode ketika pengguna menggunakan voice input
+          voiceMode = true;
+
+          // Auto-send pesan setelah voice input
+          setTimeout(() => {
+            sendMessage();
+          }, 500);
+        };
+
+        recognition.onend = function () {
+          isListening = false;
+          voiceButton.classList.remove("btn-danger");
+          voiceButton.classList.add("btn-success");
+          voiceIcon.className = "fas fa-microphone";
+          chatInput.placeholder =
+            "Tanya tentang kondisi sensor, suhu ruangan, dll...";
+        };
+
+        recognition.onerror = function (event) {
+          console.error("Speech recognition error:", event.error);
+          isListening = false;
+          voiceButton.classList.remove("btn-danger");
+          voiceButton.classList.add("btn-success");
+          voiceIcon.className = "fas fa-microphone";
+          chatInput.placeholder =
+            "Tanya tentang kondisi sensor, suhu ruangan, dll...";
+
+          if (event.error === "not-allowed") {
+            alert(
+              "Akses mikrofon ditolak. Silakan izinkan akses mikrofon di browser."
+            );
+          }
+        };
+      }
+
+      function toggleVoiceRecognition() {
+        if (isListening) {
+          recognition.stop();
+        } else {
+          recognition.start();
+        }
+      }
+
+      // Text-to-Speech function
+      function speakText(text) {
+        speechSynthesis.cancel();
+        const cleanText = cleanTextForSpeech(text);
+
+        const utterance = new SpeechSynthesisUtterance(cleanText);
+        utterance.lang = "id-ID";
+        utterance.rate = 1.0;
+        utterance.pitch = 1.2;
+        utterance.volume = 1.0;
+
+        const voices = speechSynthesis.getVoices();
+        if (!voices.length) {
+          speechSynthesis.onvoiceschanged = () => {
+            voices = speechSynthesis.getVoices();
+            setVoiceAndSpeak(voices, utterance);
+          };
+        } else {
+          setVoiceAndSpeak(voices, utterance);
+        }
+      }
+
+      function setVoiceAndSpeak(voices, utterance) {
+        const indonesianVoice =
+          voices.find((voice) => voice.name === "Google Bahasa Indonesia") ||
+          voices.find(
+            (voice) =>
+              voice.name.toLowerCase().includes("female") &&
+              voice.lang.startsWith("id")
+          ) ||
+          voices.find((voice) => voice.lang.startsWith("id"));
+
+        if (indonesianVoice) {
+          utterance.voice = indonesianVoice;
+          console.log(
+            `Dipakai voice: ${indonesianVoice.name} [${indonesianVoice.lang}]`
+          );
+        } else {
+          console.warn(
+            "Voice Bahasa Indonesia tidak ditemukan, pakai default."
+          );
+        }
+
+        speechSynthesis.speak(utterance);
+      }
+
+      // Fungsi untuk membersihkan teks dari emoji dan karakter khusus
+      function cleanTextForSpeech(text) {
+        return (
+          text
+            // Hapus emoji dan simbol unicode yang aneh/berpotensi error
+            .replace(/[\u{1F600}-\u{1F64F}]/gu, "") // Emoticons
+            .replace(/[\u{1F300}-\u{1F5FF}]/gu, "") // Misc Symbols and Pictographs
+            .replace(/[\u{1F680}-\u{1F6FF}]/gu, "") // Transport and Map
+            .replace(/[\u{1F1E0}-\u{1F1FF}]/gu, "") // Regional indicator
+            .replace(/[\u{2600}-\u{26FF}]/gu, "") // Misc symbols
+            .replace(/[\u{2700}-\u{27BF}]/gu, "") // Dingbats
+            .replace(/[\u{1F900}-\u{1F9FF}]/gu, "") // Supplemental Symbols
+            .replace(/[\u{1FA70}-\u{1FAFF}]/gu, "") // Symbols & Pictographs Extended
+
+            // Simbol emoji biasa
+            .replace(/🎤|🔊|🎯|✅|❌|⚠️|📍|🚨|💡|🌡️|💨|🌊|☀️|🌤️|⛅|🌦️|🌧️/g, "")
+
+            // Ganti simbol satuan agar terbaca alami
+            .replace(/°C/g, " derajat Celcius")
+            .replace(/ppm/g, " P P M")
+            .replace(/%/g, " persen")
+
+            // Ganti angka desimal: 33.9 → 33 koma 9
+            .replace(/(\d+)\.(\d+)/g, (_, whole, decimal) => {
+              return `${whole} koma ${decimal}`;
+            })
+
+            // Hapus karakter asing yang tidak diinginkan, sisakan karakter standar
+            .replace(/[^\w\s\.,\?!\-\(\)]/g, " ")
+
+            // Normalisasi spasi
+            .replace(/\s+/g, " ")
+            .trim()
+        );
+      }
+
       // Send message to chatbot
       async function sendMessage() {
         const chatInput = document.getElementById("chatInput");
@@ -511,10 +689,24 @@
         const chatMessages = document.getElementById("chatMessages");
         const messageDiv = document.createElement("div");
         messageDiv.className = "message bot";
+
+        // Tampilkan tombol speaker hanya jika TIDAK dalam voice mode
+        const speakerButton = voiceMode
+          ? ""
+          : `
+    <button class="btn btn-sm btn-outline-primary mt-2" onclick="speakText('${message.replace(
+      /'/g,
+      "\\'"
+    )}')" title="Bacakan jawaban">
+      <i class="fas fa-volume-up"></i> Dengarkan
+    </button>
+  `;
+
         messageDiv.innerHTML = `
-                <div class="message-avatar"><i class="fas fa-robot"></i></div>
-                <div class="message-content" id="typingContent"></div>
-            `;
+    <div class="message-avatar"><i class="fas fa-robot"></i></div>
+    <div class="message-content" id="typingContent"></div>
+    ${speakerButton}
+  `;
         chatMessages.appendChild(messageDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
 
@@ -527,6 +719,17 @@
             i++;
             chatMessages.scrollTop = chatMessages.scrollHeight;
             setTimeout(typeChar, Math.random() * 40 + 20);
+          } else {
+            // Auto-speak HANYA jika dalam voice mode
+            if (voiceMode) {
+              setTimeout(() => {
+                speakText(message);
+                // Reset voice mode setelah AI selesai berbicara
+                setTimeout(() => {
+                  voiceMode = false;
+                }, 1000);
+              }, 500);
+            }
           }
         }
         typeChar();
@@ -547,7 +750,15 @@
             const now = new Date();
             const diffMs = now - lastUpdate;
             const diffMin = Math.floor(diffMs / 60000);
-            tempInfo += ` (update ${diffMin} menit yang lalu)`;
+            if (diffMin < 1) {
+              tempInfo += " (Data sangat baru)";
+            } else if (diffMin < 5) {
+              tempInfo += ` (Data ${diffMin} menit lalu)`;
+            } else if (diffMin < 60) {
+              tempInfo += ` (Data ${Math.floor(diffMin / 5) * 5} menit lalu)`;
+            } else {
+              tempInfo += ` (Data ${Math.floor(diffMin / 60)} jam lalu)`;
+            }
           }
           context += tempInfo + "\n";
         }
@@ -708,6 +919,14 @@ Jika pengguna tidak bertanya langsung soal data, atau sedang menyapa, berpamitan
         initDashboard();
         fetchWeatherData();
         setInterval(fetchWeatherData, 5 * 60 * 1000);
+
+        // Tambahkan baris ini
+        initVoiceFeatures();
+
+        // Load voices untuk text-to-speech
+        speechSynthesis.onvoiceschanged = function () {
+          let voices = speechSynthesis.getVoices();
+        };
       });
 
       // Weather section expand/collapse

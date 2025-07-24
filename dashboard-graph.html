@@ -68,7 +68,7 @@ const database = getDatabase(app);
 
 // Inisialisasi dataset dari localStorage
 let dataset = JSON.parse(localStorage.getItem('smartclassroom_dataset')) || [];
-cleanDatasetFromLocalStorage(); // Tambahkan ini
+cleanDatasetFromLocalStorage(); 
 
 let sensorData = { temperature: null, humidity: null, ldr: null, gas: null };
 let weatherData = { temp_c: null, humidity: null, condition: '', pm2_5: null, time: '' };
@@ -456,92 +456,6 @@ async function updateDataAndChart() {
     saveCurrentData();
 }
 
-
-
-// --- Update Data & Chart ---
-// async function updateDataAndChart() {
-//     await fetchWeatherData();
-//     const label = weatherData.time || new Date().toLocaleString('id-ID', { hour12: false });
-//     // Hapus padding sebelum push data baru
-//     while (roomOption.xAxis.data.length && roomOption.xAxis.data[0] === '') {
-//         roomOption.xAxis.data.shift();
-//         roomOption.series.forEach(s => s.data.shift());
-//     }
-//     while (weatherOption.xAxis.data.length && weatherOption.xAxis.data[0] === '') {
-//         weatherOption.xAxis.data.shift();
-//         weatherOption.series.forEach(s => s.data.shift());
-//     }
-//     // Update room chart
-//     roomOption.xAxis.data.push(label);
-//     roomOption.series[0].data.push(sensorData.temperature);
-//     roomOption.series[1].data.push(sensorData.humidity);
-//     roomOption.series[2].data.push(sensorData.ldr);
-//     roomOption.series[3].data.push(sensorData.gas);
-//     // Batas maksimum maxLen data
-//     while (roomOption.xAxis.data.length > maxLen) {
-//         roomOption.xAxis.data.shift();
-//         roomOption.series.forEach(s => s.data.shift());
-//     }
-//     // Pastikan semua series sama panjang dengan xAxis
-//     roomOption.series.forEach(s => {
-//         while (s.data.length < roomOption.xAxis.data.length) s.data.unshift(null);
-//         while (s.data.length > roomOption.xAxis.data.length) s.data.shift();
-//     });
-//     // Padding hanya untuk tampilan
-//     let padRoom = maxLen - roomOption.xAxis.data.length;
-//     for (let i = 0; i < padRoom; i++) {
-//         roomOption.xAxis.data.unshift('');
-//         roomOption.series.forEach(s => s.data.unshift(null));
-//     }
-//     // Forward fill data null di tengah agar line tidak terputus
-//     roomOption.series.forEach(s => {
-//         for (let i = 1; i < s.data.length; i++) {
-//             if (s.data[i] === null && roomOption.xAxis.data[i] !== '') {
-//                 s.data[i] = s.data[i-1];
-//             }
-//         }
-//     });
-//     chartRoom.setOption(roomOption);
-//     // Simpan data grafik ke localStorage (tanpa padding)
-//     localStorage.setItem('smartclassroom_chartRoom', JSON.stringify({
-//         xAxis: roomOption.xAxis.data.slice(padRoom),
-//         series: roomOption.series.map(s => s.data.slice(padRoom))
-//     }));
-
-//     // Update weather chart
-//     weatherOption.xAxis.data.push(label);
-//     weatherOption.series[0].data.push(weatherData.temp_c);
-//     weatherOption.series[1].data.push(weatherData.humidity);
-//     weatherOption.series[2].data.push(weatherData.pm2_5);
-//     while (weatherOption.xAxis.data.length > maxLen) {
-//         weatherOption.xAxis.data.shift();
-//         weatherOption.series.forEach(s => s.data.shift());
-//     }
-
-//     weatherOption.series.forEach(s => {
-//         while (s.data.length < weatherOption.xAxis.data.length) s.data.unshift(null);
-//         while (s.data.length > weatherOption.xAxis.data.length) s.data.shift();
-//     });
-//     let padWeather = maxLen - weatherOption.xAxis.data.length;
-//     for (let i = 0; i < padWeather; i++) {
-//         weatherOption.xAxis.data.unshift('');
-//         weatherOption.series.forEach(s => s.data.unshift(null));
-//     }
-//     weatherOption.series.forEach(s => {
-//         for (let i = 1; i < s.data.length; i++) {
-//             if (s.data[i] === null && weatherOption.xAxis.data[i] !== '') {
-//                 s.data[i] = s.data[i-1];
-//             }
-//         }
-//     });
-//     chartWeather.setOption(weatherOption);
-//     localStorage.setItem('smartclassroom_chartWeather', JSON.stringify({
-//         xAxis: weatherOption.xAxis.data.slice(padWeather),
-//         series: weatherOption.series.map(s => s.data.slice(padWeather))
-//     }));
-//     // Simpan data otomatis setiap update
-//     saveCurrentData();
-// }
 
 window.onload = function() {
     const saved = localStorage.getItem('smartclassroom_dataset');
