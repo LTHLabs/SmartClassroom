@@ -21,7 +21,7 @@
     />
     <link rel="stylesheet" href="css/style.css" />
   </head>
-  <body>
+  <body oncontextmenu="return false;">
     <div class="offline-indicator" id="offlineIndicator">
       ⚠️ Koneksi terputus - Data mungkin tidak real-time
     </div>
@@ -172,9 +172,7 @@
               id="voiceButton"
               type="button"
               style="margin-left: 8px"
-            >
-              <i class="fas fa-microphone" id="voiceIcon"></i> Voice
-            </button>
+            ></button>
           </div>
         </div>
       </div>
@@ -219,6 +217,7 @@
       let isListening = false;
       let speechSynthesis = window.speechSynthesis;
       let voiceMode = false;
+      let aiStartTime;
 
       const sensorConfig = {
         temperature: {
@@ -265,13 +264,25 @@
             return "normal";
           },
         },
-        gasDetected: {
-          title: "Status Deteksi Gas",
-          icon: "fas fa-exclamation-triangle",
-          unit: "",
-          color: "#dc2626",
-          getStatus: (value) => (value ? "danger" : "normal"),
-          formatValue: (value) => (value ? "🚨 Gas Terdeteksi!" : "Aman"),
+        // gasDetected: {
+        //   title: "Status Deteksi Gas",
+        //   icon: "fas fa-exclamation-triangle",
+        //   unit: "",
+        //   color: "#dc2626",
+        //   getStatus: (value) => (value ? "danger" : "normal"),
+        //   formatValue: (value) => (value ? "🚨 Gas Terdeteksi!" : "Aman"),
+        // },
+        current: {
+          title: "Arus Listrik",
+          icon: "fas fa-bolt",
+          unit: "A",
+          color: "#8b5cf6",
+          getStatus: (value) => {
+            if (value > 5) return "danger";
+            if (value > 2) return "warning";
+            return "normal";
+          },
+          formatValue: (value) => value.toFixed(3), // tampilkan 3 digit desimal
         },
       };
 
@@ -345,7 +356,6 @@
         }
       }
 
-      // Setup real-time listeners
       function setupRealtimeListeners() {
         const sensorDataRef = ref(database, "sensorData");
 
@@ -357,12 +367,10 @@
               Object.keys(sensorConfig).forEach((sensorKey) => {
                 if (data.hasOwnProperty(sensorKey)) {
                   sensorData[sensorKey] = data[sensorKey];
-                  // Ambil timestamp spesifik jika ada, fallback ke data.timestamp
                   let sensorTimestamp = null;
                   if (sensorKey === "temperature") {
                     sensorTimestamp =
                       data.temperatureTimestamp || data.timestamp || Date.now();
-                    // Konversi ke milidetik jika string
                     if (
                       typeof sensorTimestamp === "string" &&
                       !/^[0-9]+$/.test(sensorTimestamp)
@@ -403,14 +411,12 @@
           }
         );
 
-        // Listen for connection status
         const connectedRef = ref(database, ".info/connected");
         onValue(connectedRef, (snapshot) => {
           setOfflineStatus(!snapshot.val());
         });
       }
 
-      // Update sensor card
       function updateSensorCard(sensorKey, data) {
         const config = sensorConfig[sensorKey];
         const value = data.value || 0;
@@ -562,7 +568,13 @@
         utterance.pitch = 1.2;
         utterance.volume = 1.0;
 
-        const voices = speechSynthesis.getVoices();
+        let voices = speechSynthesis.getVoices();
+        if (typeof aiStartTime === "number") {
+          const aiResponseTime = performance.now() - aiStartTime;
+          console.log(`⏱️ Waktu respons AI: ${aiResponseTime.toFixed(2)} ms`);
+        } else {
+          console.warn("❗ aiStartTime belum diset!");
+        }
         if (!voices.length) {
           speechSynthesis.onvoiceschanged = () => {
             voices = speechSynthesis.getVoices();
@@ -572,6 +584,7 @@
           setVoiceAndSpeak(voices, utterance);
         }
       }
+      window.speakText = speakText;
 
       function setVoiceAndSpeak(voices, utterance) {
         const indonesianVoice =
@@ -585,9 +598,6 @@
 
         if (indonesianVoice) {
           utterance.voice = indonesianVoice;
-          console.log(
-            `Dipakai voice: ${indonesianVoice.name} [${indonesianVoice.lang}]`
-          );
         } else {
           console.warn(
             "Voice Bahasa Indonesia tidak ditemukan, pakai default."
@@ -640,6 +650,7 @@
         if (!message) return;
         addMessageToChat(message, "user");
         chatInput.value = "";
+        aiStartTime = performance.now();
         showLoading(true);
         try {
           const context = prepareContext();
@@ -677,38 +688,37 @@
 
         chatMessages.appendChild(messageDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
+        
       }
-
+      
       function showLoading(show) {
         const loadingIndicator = document.getElementById("loadingIndicator");
         loadingIndicator.style.display = show ? "block" : "none";
       }
-
+      
       function addTypingMessageToChat(message) {
         typingStopped = false;
         const chatMessages = document.getElementById("chatMessages");
         const messageDiv = document.createElement("div");
         messageDiv.className = "message bot";
-
-        // Tampilkan tombol speaker hanya jika TIDAK dalam voice mode
+        
         const speakerButton = voiceMode
-          ? ""
-          : `
-    <button class="btn btn-sm btn-outline-primary mt-2" onclick="speakText('${message.replace(
-      /'/g,
-      "\\'"
-    )}')" title="Bacakan jawaban">
-      <i class="fas fa-volume-up"></i> Dengarkan
-    </button>
-  `;
-
-        messageDiv.innerHTML = `
-    <div class="message-avatar"><i class="fas fa-robot"></i></div>
-    <div class="message-content" id="typingContent"></div>
-    ${speakerButton}
-  `;
-        chatMessages.appendChild(messageDiv);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
+        ? ""
+        : `<button class="btn btn-sm btn-outline-primary mt-1 speak-button" title="Bacakan jawaban">
+          <i class="fas fa-volume-up"></i>
+          </button>`;
+          
+          messageDiv.innerHTML = `
+          <div class="message-avatar"><i class="fas fa-robot"></i></div>
+          <div class="message-content" id="typingContent"></div>
+          ${speakerButton}
+          `;
+          chatMessages.appendChild(messageDiv);
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+          const speakBtn = messageDiv.querySelector(".speak-button");
+          if (speakBtn) {
+            speakBtn.addEventListener("click", () => speakText(message));
+          }
 
         const typingContent = messageDiv.querySelector("#typingContent");
         let i = 0;
@@ -720,11 +730,9 @@
             chatMessages.scrollTop = chatMessages.scrollHeight;
             setTimeout(typeChar, Math.random() * 40 + 20);
           } else {
-            // Auto-speak HANYA jika dalam voice mode
             if (voiceMode) {
               setTimeout(() => {
                 speakText(message);
-                // Reset voice mode setelah AI selesai berbicara
                 setTimeout(() => {
                   voiceMode = false;
                 }, 1000);
@@ -784,6 +792,13 @@
             sensorData.gasDetected ? "Terdeteksi Bahaya!" : "Aman"
           }\n`;
         }
+        if (sensorData.current) {
+          const arus = sensorData.current;
+          let kondisi = "normal";
+          if (arus > 5) kondisi = "warning";
+          else if (arus > 2) kondisi = "perlu diperhatikan";
+          context += `- Arus listrik: ${arus} A (${kondisi})\n`;
+        }
 
         if (isInactive) {
           context += `\nPeringatan: Sensor  tidak aktif atau tidak ada data terbaru!\n`;
@@ -800,7 +815,7 @@
         } else {
           context += `\nData cuaca kota Cirebon tidak tersedia saat ini.\n`;
         }
-        context += `\nAnda adalah AI assistant yang cerdas dan ramah untuk sistem Smart Classroom. Tugas Anda adalah memantau dan memberikan informasi berdasarkan data sensor di dalam ruangan, seperti suhu, kelembapan, cahaya (LDR), gas, arus listrik (bila ada), serta informasi cuaca dari sekitar lokasi (misalnya kota Cirebon) berdasarkan data dari layanan weather.
+        context += `\nAnda adalah AI assistant yang cerdas dan ramah untuk sistem Smart Classroom. Tugas Anda adalah memantau dan memberikan informasi berdasarkan data sensor di dalam ruangan, seperti suhu, kelembapan, cahaya (LDR), gas, arus listrik (ACS712), serta informasi cuaca dari sekitar lokasi (misalnya kota Cirebon) berdasarkan data dari layanan weather.
         Jika pengguna sedang menyapa, berpamitan, bercanda, atau memberikan tanggapan sosial lainnya, tanggapi dengan cara yang sesuai secara sosial, bukan membahas data sensor.
 Berikan jawaban dalam bahasa Indonesia yang mudah dipahami, tidak kaku, dan interaktif layaknya percakapan manusia. Sampaikan analisis kondisi ruangan berdasarkan data sensor yang tersedia, dan berikan saran jika ada kondisi yang perlu perhatian (misalnya suhu terlalu tinggi, kualitas udara buruk, pencahayaan terlalu redup, dll).
 Jika data cuaca tersedia, gabungkan dengan analisis Anda untuk memberikan konteks lingkungan yang lebih lengkap (misalnya: “Udara di luar sedang panas, dan suhu dalam ruangan juga tinggi. Disarankan menyalakan pendingin”).
